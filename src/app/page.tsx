@@ -1,4 +1,4 @@
-import CreateBlogPost from "@/components/creator-blog-post";
+import CreateBlogPost from "@/components/create-blog-post/creator-blog-post";
 
 export default function Home() {
   return (

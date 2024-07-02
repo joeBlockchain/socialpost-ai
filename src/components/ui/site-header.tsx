@@ -2,14 +2,14 @@ import Link from "next/link";
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { Rabbit } from "lucide-react";
+import { Share2 } from "lucide-react";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
         <Link href="/" className="flex mr-6 text-primary" prefetch={false}>
-          <Rabbit className="h-8 w-8" />
+          <Share2 className="h-6 w-6" />
           <span className="ml-4 font-semibold text-lg">SocialPost-AI</span>
         </Link>
 
