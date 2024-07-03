@@ -91,7 +91,6 @@ If there is an issue following the instructions, please provide the reason you c
 
     // Extract the JSON data from Claude's response
     const response = msg.content[0].type === "text" ? msg.content[0].text : "";
-    console.log(response);
 
     // Extract the jsonResponse and error
     const jsonResponse = response

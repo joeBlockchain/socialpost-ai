@@ -118,7 +118,7 @@ export default function BlogDraft({
       </CardContent>
       <CardFooter className="flex justify-end">
         <Button variant="secondary" onClick={handleSubmit} className="mt-4">
-          Confirm Blog Draft
+          Review Blog
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardFooter>

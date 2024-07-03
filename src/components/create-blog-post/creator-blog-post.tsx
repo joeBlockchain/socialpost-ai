@@ -4,13 +4,9 @@ import { useState } from "react";
 import ProvideRefContent from "./provide-ref-content";
 import ReaderObjectiveAnalyzer from "./reader-objective-analyzer";
 import CoreMessageCrafter from "./core-message-crafter";
-import EngagementOptimization from "./engagement-optimization";
 import BlogOutline from "./blog-outline";
 import BlogDraft from "./blog-draft";
-
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
+import BlogPreview from "./blog-preview";
 // Add this interface
 interface TargetAudienceData {
   targetAudience: {
@@ -58,6 +54,9 @@ export default function CreateBlogPost() {
     {}
   );
   const [blogDraft, setBlogDraft] = useState<Record<string, string>>({});
+  const [blogSections, setBlogSections] = useState<
+    Array<{ header: string; content: string }>
+  >([]);
 
   const fetchBlogStrategy = async (currentData: TargetAudienceData | null) => {
     const formData = new FormData();
@@ -73,7 +72,6 @@ export default function CreateBlogPost() {
       JSON.stringify(allTargetAudiences)
     );
 
-    console.log("called fetchBlogStrategy");
     try {
       const res = await fetch("/api/reader-objective", {
         method: "POST",
@@ -84,14 +82,11 @@ export default function CreateBlogPost() {
       }
 
       const data = await res.json();
-      console.log("JSON Response:", data.jsonResponse);
-      console.log("Error Response:", data.errorResponse);
 
       if (data.jsonResponse) {
         const parsedResponse: TargetAudienceData = JSON.parse(
           data.jsonResponse
         );
-        console.log("Parsed JSON Response:", parsedResponse);
         setTargetAudienceData(parsedResponse);
 
         // Add the new target audience to the previous ones
@@ -139,7 +134,6 @@ export default function CreateBlogPost() {
   const handleCoreMessageSubmit = async (
     coreMessage: Record<string, string>
   ) => {
-    console.log("Core Message:", coreMessage);
     setCoreMessageData(coreMessage);
     await fetchBlogOutline(coreMessage);
   };
@@ -169,7 +163,6 @@ export default function CreateBlogPost() {
   const handleBlogOutlineSubmit = async (
     outlineData: Record<string, BlogSection>
   ) => {
-    console.log("Blog Outline:", outlineData);
     setBlogOutline(outlineData);
 
     // Start drafting the first section
@@ -216,6 +209,11 @@ export default function CreateBlogPost() {
   };
 
   const handleBlogDraftSubmit = (draftData: Record<string, string>) => {
+    const newSections = Object.entries(draftData).map(([header, content]) => ({
+      header,
+      content,
+    }));
+    setBlogSections(newSections);
     console.log("Blog Draft:", draftData);
     // Move to the next step (e.g., engagement optimization)
   };
@@ -226,17 +224,7 @@ export default function CreateBlogPost() {
   };
 
   return (
-    <main className="space-y-5">
-      <RadioGroup defaultValue="option-one">
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="option-one" id="option-one" />
-          <Label htmlFor="option-one">Option One</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="option-two" id="option-two" />
-          <Label htmlFor="option-two">Option Two</Label>
-        </div>
-      </RadioGroup>
+    <main className="space-y-5 pb-10">
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
           <span className="">1</span>
@@ -286,12 +274,7 @@ export default function CreateBlogPost() {
           blogDraft={blogDraft}
         />
       </div>
-      <div className="flex flex-row space-x-4 w-full">
-        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">6</span>
-        </div>
-        <EngagementOptimization />
-      </div>
+      <BlogPreview blogSections={blogSections} />
     </main>
   );
 }

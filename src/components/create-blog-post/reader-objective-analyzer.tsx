@@ -159,7 +159,6 @@ export default function ReaderObjectiveAnalyzer({
   };
 
   const handleNewAISuggestions = () => {
-    console.log("fetching new AI suggestions");
     fetchBlogStrategy(targetAudienceData);
   };
 

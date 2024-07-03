@@ -40,14 +40,6 @@ export async function POST(req: NextRequest) {
     const currentSection = Object.keys(blogOutline)[currentSectionIndex];
     const currentSectionContent = blogOutline[currentSection];
 
-    console.log("currentSectionIndex", currentSectionIndex);
-    console.log("fileContents", fileContents);
-    console.log("readerObjectiveData", readerObjectiveData);
-    console.log("coreMessageData", coreMessageData);
-    console.log("blogOutline", blogOutline);
-    console.log("completedSections", completedSections);
-    console.log("currentSection", currentSection);
-
     const msg = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
@@ -102,7 +94,6 @@ If there is an issue following the instructions, please provide the reason you c
 
     // Extract the JSON data from Claude's response
     const response = msg.content[0].type === "text" ? msg.content[0].text : "";
-    console.log("response", response);
 
     // Extract the sectionContent directly using regex
     const sectionContentMatch = response.match(
