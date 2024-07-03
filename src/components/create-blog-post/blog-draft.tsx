@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -15,62 +17,38 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ArrowRight } from "lucide-react";
+import { Label } from "../ui/label";
 
 interface BlogSection {
-  title: string;
+  header: string;
   description: string;
-  placeholder: string;
 }
-
-const blogSections: BlogSection[] = [
-  {
-    title: "Attention-Grabbing Introduction",
-    description:
-      "Start with a hook related to the core message. Briefly introduce the SaaS app and its purpose.",
-    placeholder:
-      "E.g., 'Imagine a world where creating beautiful, responsive websites is as easy as dragging and dropping elements...'",
-  },
-  {
-    title: "Developer's Journey",
-    description:
-      "Narrate the development process, focusing on relatable experiences. Highlight challenges and solutions.",
-    placeholder:
-      "E.g., 'When I first started building this SaaS, I never imagined the rollercoaster ride that awaited me...'",
-  },
-  {
-    title: "Technical Insights",
-    description:
-      "Share valuable technical details, tailored to the audience's level. Use analogies to explain complex concepts.",
-    placeholder:
-      "E.g., 'At the heart of our SaaS is a powerful algorithm that works like a skilled librarian, efficiently organizing and retrieving information...'",
-  },
-  {
-    title: "Lessons Learned",
-    description:
-      "Emphasize key takeaways applicable to the reader's own projects.",
-    placeholder:
-      "E.g., 'One of the most valuable lessons I learned was the importance of user feedback early in the development process...'",
-  },
-  {
-    title: "Call to Action",
-    description:
-      "Encourage readers to take a specific next step (e.g., start their own project, try a new technique).",
-    placeholder:
-      "E.g., 'Ready to start your own SaaS journey? Take the first step today by signing up for our free developer toolkit...'",
-  },
-];
 
 interface BlogDraftProps {
   onSubmit: (data: Record<string, string>) => void;
+  blogSections: BlogSection[];
+  blogOutline: Record<string, BlogSection>;
+  blogDraft: Record<string, string>;
 }
 
-export default function BlogDraft({ onSubmit }: BlogDraftProps) {
-  const [sections, setSections] = useState<Record<string, string>>(
-    Object.fromEntries(blogSections.map((s) => [s.title, ""]))
-  );
+export default function BlogDraft({
+  onSubmit,
+  blogSections,
+  blogOutline,
+  blogDraft,
+}: BlogDraftProps) {
+  const [sections, setSections] = useState<Record<string, string>>(blogDraft);
+  const [openAccordionItem, setOpenAccordionItem] = useState<
+    string | undefined
+  >(blogSections[0]?.header);
 
-  const handleSectionChange = (title: string, content: string) => {
-    setSections((prev) => ({ ...prev, [title]: content }));
+  useEffect(() => {
+    setSections(blogDraft);
+  }, [blogDraft]);
+
+  const handleSectionChange = (header: string, content: string) => {
+    setSections((prev) => ({ ...prev, [header]: content }));
   };
 
   const handleSubmit = () => {
@@ -80,36 +58,68 @@ export default function BlogDraft({ onSubmit }: BlogDraftProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>The Blog Draft</CardTitle>
-        <CardDescription>
-          Review draft of the blog for each section.
-        </CardDescription>
+        <CardTitle>The Blog</CardTitle>
+        <CardDescription>Review and edit the blog!</CardDescription>
       </CardHeader>
       <CardContent>
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full"
+          value={openAccordionItem}
+          onValueChange={setOpenAccordionItem}
+        >
           {blogSections.map((section, index) => (
-            <AccordionItem value={section.title} key={index}>
-              <AccordionTrigger>{section.title}</AccordionTrigger>
-              <AccordionContent>
-                <p className="mb-2 text-sm text-muted-foreground">
-                  {section.description}
-                </p>
-                <Textarea
-                  placeholder={section.placeholder}
-                  value={sections[section.title]}
-                  onChange={(e) =>
-                    handleSectionChange(section.title, e.target.value)
-                  }
-                  className="min-h-[150px]"
-                />
+            <AccordionItem value={section.header} key={index} className="">
+              <AccordionTrigger>{section.header}</AccordionTrigger>
+              <AccordionContent className="ml-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`section-description-${index}`} className="">
+                    Section Goals
+                  </Label>
+                  <ul
+                    id={`section-description-${index}`}
+                    className="list-disc list-inside ml-2 text-sm text-muted-foreground"
+                  >
+                    {section.description.split("\n").map((point, index) => (
+                      <li key={index}>{point.replace(/^- /, "")}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`section-content-${index}`} className="">
+                    Section Content
+                  </Label>
+                  <Textarea
+                    id={`section-content-${index}`}
+                    value={sections[section.header] || ""}
+                    onChange={(e) =>
+                      handleSectionChange(section.header, e.target.value)
+                    }
+                    className="min-h-[150px]"
+                  />
+                </div>
+                {index < blogSections.length - 1 && (
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      setOpenAccordionItem(blogSections[index + 1].header)
+                    }
+                    className="mt-4"
+                  >
+                    Next
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleSubmit} className="mt-4">
+      <CardFooter className="flex justify-end">
+        <Button variant="secondary" onClick={handleSubmit} className="mt-4">
           Confirm Blog Draft
+          <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardFooter>
     </Card>

@@ -41,7 +41,14 @@ export async function POST(req: NextRequest) {
           content: [
             {
               type: "text",
-              text: `You are an AI assistant tasked with helping a user craft the core message for their blog post using the SUCCESs principles from "Made to Stick". Based on the provided content and reader objective data, generate suggestions for each principle. Here's the input:
+              text: `You are an AI assistant tasked with helping a user craft the core message for their blog post using the 
+              SUCCESs principles from "Made to Stick". Based on the provided content and reader objective data, generate 
+              suggestions for each principle. 
+
+
+              
+              
+              Here's the input:
 
                 Reference Files:
                 ${referenceFilesContent}
@@ -55,12 +62,12 @@ export async function POST(req: NextRequest) {
 
                 <jsonResponse>
                 {
-                "simple": "A concise, core message for the SaaS creation journey",
-                "unexpected": "A surprising element or unconventional choice in the process",
-                "concrete": "A tangible step or real-world example from the SaaS development",
-                "credible": "A statement highlighting the developer's expertise or unique insights",
-                "emotional": "A description of an emotional moment in the development journey",
-                "stories": "A narrative hook or story element from the developer's experience"
+                "simple": "A concise, core message for the SaaS creation journey: 'Build, learn, iterate: The essence of successful SaaS development is continuous improvement based on user feedback.'",
+                "unexpected": "A surprising element or unconventional choice in the process: 'Our biggest breakthrough came when we decided to scrap our entire codebase and start from scratch, six months into development.'",
+                "concrete": "A tangible step or real-world example from the SaaS development: 'We increased user engagement by 47% after implementing a gamified onboarding process that guides users through setting up their first project.'",
+                "credible": "A statement highlighting the developer's expertise or unique insights: 'Having developed five SaaS products over the past decade, I've learned that the most successful applications solve a problem the founders themselves have experienced deeply.'",
+                "emotional": "A description of an emotional moment in the development journey: 'The day we received our first paying customer, the entire team gathered around a single monitor, watching in silent awe as the notification came through. It was a moment of pure validation and excitement that I'll never forget.'",
+                "stories": "A narrative hook or story element from the developer's experience: 'It was 3 AM, and I was knee-deep in code, trying to fix a critical bug before our big launch. As I sipped my fifth cup of coffee, I realized this moment—this struggle—was exactly why I became a developer in the first place.'"
                 }
                 </jsonResponse>
 

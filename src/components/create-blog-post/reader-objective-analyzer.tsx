@@ -11,7 +11,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea"; // Assuming you have a Textarea component
-import { ArrowLeft, ArrowRight, Car, RotateCcw } from "lucide-react";
+import { ArrowRight, RotateCcw } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface Option {
   value: string;
@@ -36,8 +42,8 @@ function OptionSelector({
   onCustomInputChange,
 }: OptionSelectorProps) {
   return (
-    <div className="mb-4">
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+    <div className="">
+      {/* <h3 className="text-lg font-semibold mb-2">{title}</h3> */}
       <RadioGroup value={selected} onValueChange={onSelect}>
         {options.map((option, index) => (
           <div key={index} className="flex space-x-2 mb-2">
@@ -113,6 +119,9 @@ export default function ReaderObjectiveAnalyzer({
   const [customAudienceGoals, setCustomAudienceGoals] = useState("");
   const [selectedBlogGoals, setSelectedBlogGoals] = useState("");
   const [customBlogGoals, setCustomBlogGoals] = useState("");
+  const [openAccordionItem, setOpenAccordionItem] = useState<
+    string | undefined
+  >("target-audience");
 
   useEffect(() => {
     if (targetAudienceData) {
@@ -139,6 +148,14 @@ export default function ReaderObjectiveAnalyzer({
       blogGoals:
         selectedBlogGoals === "custom" ? customBlogGoals : selectedBlogGoals,
     });
+  };
+
+  const handleNextAccordionItem = () => {
+    const items = ["target-audience", "audience-goals", "blog-post-goals"];
+    const currentIndex = items.indexOf(openAccordionItem || "");
+    if (currentIndex < items.length - 1) {
+      setOpenAccordionItem(items[currentIndex + 1]);
+    }
   };
 
   const handleNewAISuggestions = () => {
@@ -211,32 +228,94 @@ export default function ReaderObjectiveAnalyzer({
         </Button>
       </CardHeader>
       <CardContent>
-        <OptionSelector
-          title="Target Audience"
-          options={targetAudienceOptions}
-          selected={selectedTargetAudience}
-          onSelect={setSelectedTargetAudience}
-          customInput={customTargetAudience}
-          onCustomInputChange={setCustomTargetAudience}
-        />
+        <Accordion
+          type="single"
+          collapsible
+          value={openAccordionItem}
+          onValueChange={setOpenAccordionItem}
+        >
+          <AccordionItem value="target-audience">
+            <AccordionTrigger>Target Audience</AccordionTrigger>
+            <AccordionContent>
+              <div className="ml-4">
+                <p className="mb-4 text-base">
+                  Knowing your audience allows us to tailor our content to their
+                  interests, needs, and problems. This increases engagement and
+                  the likelihood that they will find our content valuable.
+                </p>
+                <OptionSelector
+                  title="Target Audience"
+                  options={targetAudienceOptions}
+                  selected={selectedTargetAudience}
+                  onSelect={setSelectedTargetAudience}
+                  customInput={customTargetAudience}
+                  onCustomInputChange={setCustomTargetAudience}
+                />
+                <Button
+                  variant="secondary"
+                  onClick={handleNextAccordionItem}
+                  className="mt-4"
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        <OptionSelector
-          title="Audience Goals"
-          options={audienceGoalsOptions}
-          selected={selectedAudienceGoals}
-          onSelect={setSelectedAudienceGoals}
-          customInput={customAudienceGoals}
-          onCustomInputChange={setCustomAudienceGoals}
-        />
+          <AccordionItem value="audience-goals">
+            <AccordionTrigger>Audience Goals</AccordionTrigger>
+            <AccordionContent>
+              <div className="ml-4">
+                <p className="mb-4 text-base">
+                  Defining why we want our audience to read our content ensures
+                  that our writing has a clear purpose. Whether it is to inform,
+                  entertain, or persuade, having a defined objective helps us
+                  stay focused and deliver value.
+                </p>
+                <OptionSelector
+                  title="Audience Goals"
+                  options={audienceGoalsOptions}
+                  selected={selectedAudienceGoals}
+                  onSelect={setSelectedAudienceGoals}
+                  customInput={customAudienceGoals}
+                  onCustomInputChange={setCustomAudienceGoals}
+                />
+                <Button
+                  variant="secondary"
+                  onClick={handleNextAccordionItem}
+                  className="mt-4"
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        <OptionSelector
-          title="Blog Post Goals"
-          options={blogGoalsOptions}
-          selected={selectedBlogGoals}
-          onSelect={setSelectedBlogGoals}
-          customInput={customBlogGoals}
-          onCustomInputChange={setCustomBlogGoals}
-        />
+          <AccordionItem value="blog-post-goals">
+            <AccordionTrigger>Blog Post Goals</AccordionTrigger>
+            <AccordionContent>
+              <div className="ml-4">
+                <p className="mb-4 text-base">
+                  By aligning our personal goals with our audiences interests,
+                  we can create content that is more relevant and engaging. This
+                  alignment ensures that our post resonates with our readers and
+                  meets their expectations.
+                </p>
+                <OptionSelector
+                  title="Blog Post Goals"
+                  options={blogGoalsOptions}
+                  selected={selectedBlogGoals}
+                  onSelect={setSelectedBlogGoals}
+                  customInput={customBlogGoals}
+                  onCustomInputChange={setCustomBlogGoals}
+                />
+                {/* No "Next" button for the last item */}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </CardContent>
       <CardFooter className="flex justify-end">
         <Button variant="secondary" onClick={handleSubmit} className="">

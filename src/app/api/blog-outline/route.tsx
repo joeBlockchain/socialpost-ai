@@ -58,10 +58,10 @@ export async function POST(req: NextRequest) {
 Reference Files:
 ${referenceFilesContent}
 
-Reader Objective Data:
+Reader Objective Data following the target audience and blog goals.  This is who our audience is, and they should gain from our content and also the authors motivation and goals for reaching out to them:
 ${JSON.stringify(readerObjectiveData, null, 2)}
 
-Core Message Data:
+Core Message Data following SUCCESs principles from the book Made to Stick by Chip Heath and Dan Heath:
 ${JSON.stringify(coreMessageData, null, 2)}
 
 Please provide your outline in the following JSON format:
@@ -70,11 +70,9 @@ Please provide your outline in the following JSON format:
 {
   "blogSections": [
     {
-      "title": "Section Title",
-      "description": "Brief description of the section's purpose and content",
-      "placeholder": "Example or placeholder text for this section"
+      "header": "Section header",
+      "description": "detailed description in outline format of the section's purpose and content",
     },
-    // ... (repeat for all 5 sections)
   ]
 }
 </jsonResponse>

@@ -8,6 +8,9 @@ import EngagementOptimization from "./engagement-optimization";
 import BlogOutline from "./blog-outline";
 import BlogDraft from "./blog-draft";
 
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
 // Add this interface
 interface TargetAudienceData {
   targetAudience: {
@@ -24,10 +27,15 @@ interface TargetAudienceData {
   }>;
 }
 
+interface ReaderObjectiveData {
+  targetAudience: string;
+  audienceGoals: string;
+  blogGoals: string;
+}
+
 interface BlogSection {
-  title: string;
+  header: string;
   description: string;
-  placeholder: string;
 }
 
 export default function CreateBlogPost() {
@@ -46,6 +54,10 @@ export default function CreateBlogPost() {
   const [blogOutlineData, setBlogOutlineData] = useState<BlogSection[] | null>(
     null
   );
+  const [blogOutline, setBlogOutline] = useState<Record<string, BlogSection>>(
+    {}
+  );
+  const [blogDraft, setBlogDraft] = useState<Record<string, string>>({});
 
   const fetchBlogStrategy = async (currentData: TargetAudienceData | null) => {
     const formData = new FormData();
@@ -154,9 +166,58 @@ export default function CreateBlogPost() {
     }
   };
 
-  const handleBlogOutlineSubmit = (coreMessage: Record<string, string>) => {
-    console.log("Core Message:", coreMessage);
-    // Store the core message and move to the next step
+  const handleBlogOutlineSubmit = async (
+    outlineData: Record<string, BlogSection>
+  ) => {
+    console.log("Blog Outline:", outlineData);
+    setBlogOutline(outlineData);
+
+    // Start drafting the first section
+    await fetchBlogDraftSection(0, outlineData);
+  };
+
+  const fetchBlogDraftSection = async (
+    sectionIndex: number,
+    outlineData: Record<string, BlogSection>
+  ) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
+    formData.append("coreMessageData", JSON.stringify(coreMessageData));
+    formData.append("blogOutline", JSON.stringify(outlineData));
+    formData.append("completedSections", JSON.stringify({})); // Initially empty
+    formData.append("currentSectionIndex", sectionIndex.toString());
+
+    try {
+      const response = await fetch("/api/blog-draft-section", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch blog section");
+      }
+
+      const data = await response.json();
+
+      // Update the blog draft state with the new section
+      setBlogDraft((prev) => ({
+        ...prev,
+        [Object.keys(outlineData)[sectionIndex]]: data.sectionContent,
+      }));
+
+      // If there are more sections, fetch the next one
+      if (sectionIndex < Object.keys(outlineData).length - 1) {
+        await fetchBlogDraftSection(sectionIndex + 1, outlineData);
+      }
+    } catch (error) {
+      console.error("Error fetching blog section:", error);
+    }
+  };
+
+  const handleBlogDraftSubmit = (draftData: Record<string, string>) => {
+    console.log("Blog Draft:", draftData);
+    // Move to the next step (e.g., engagement optimization)
   };
 
   const handleBlogStructureSubmit = (coreMessage: Record<string, string>) => {
@@ -166,6 +227,16 @@ export default function CreateBlogPost() {
 
   return (
     <main className="space-y-5">
+      <RadioGroup defaultValue="option-one">
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="option-one" id="option-one" />
+          <Label htmlFor="option-one">Option One</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="option-two" id="option-two" />
+          <Label htmlFor="option-two">Option Two</Label>
+        </div>
+      </RadioGroup>
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
           <span className="">1</span>
@@ -178,7 +249,7 @@ export default function CreateBlogPost() {
       </div>
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">3</span>
+          <span className="">2</span>
         </div>
         <ReaderObjectiveAnalyzer
           onSubmit={handleReaderObjectiveAnalyzerSubmit}
@@ -188,7 +259,7 @@ export default function CreateBlogPost() {
       </div>
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">4</span>
+          <span className="">3</span>
         </div>
         <CoreMessageCrafter
           onSubmit={handleCoreMessageSubmit}
@@ -197,7 +268,7 @@ export default function CreateBlogPost() {
       </div>
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">5</span>
+          <span className="">4</span>
         </div>
         <BlogOutline
           onSubmit={handleBlogOutlineSubmit}
@@ -206,9 +277,14 @@ export default function CreateBlogPost() {
       </div>
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">6</span>
+          <span className="">5</span>
         </div>
-        <BlogDraft onSubmit={handleBlogStructureSubmit} />
+        <BlogDraft
+          onSubmit={handleBlogDraftSubmit}
+          blogSections={blogOutlineData || []}
+          blogOutline={blogOutline}
+          blogDraft={blogDraft}
+        />
       </div>
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">

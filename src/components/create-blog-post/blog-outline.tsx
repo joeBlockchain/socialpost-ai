@@ -16,15 +16,16 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input"; // Import Input component
+import { Label } from "../ui/label";
 
 interface BlogSection {
-  title: string;
+  header: string;
   description: string;
-  placeholder: string;
 }
 
 interface BlogOutlineProps {
-  onSubmit: (data: Record<string, string>) => void;
+  onSubmit: (data: Record<string, BlogSection>) => void;
   blogSections: BlogSection[];
 }
 
@@ -32,16 +33,32 @@ export default function BlogOutline({
   onSubmit,
   blogSections,
 }: BlogOutlineProps) {
-  const [sections, setSections] = useState<Record<string, string>>({});
+  const [sections, setSections] = useState<Record<string, BlogSection>>({});
+
   const [openAccordionItem, setOpenAccordionItem] = useState<
     string | undefined
-  >(blogSections[0]?.title);
+  >(blogSections[0]?.header);
+
   useEffect(() => {
-    setSections(Object.fromEntries(blogSections.map((s) => [s.title, ""])));
+    setSections(
+      Object.fromEntries(
+        blogSections.map((s) => [
+          s.header,
+          { header: s.header, description: s.description },
+        ])
+      )
+    );
   }, [blogSections]);
 
-  const handleSectionChange = (title: string, content: string) => {
-    setSections((prev) => ({ ...prev, [title]: content }));
+  const handleSectionChange = (
+    header: string,
+    field: "header" | "description",
+    value: string
+  ) => {
+    setSections((prev) => ({
+      ...prev,
+      [header]: { ...prev[header], [field]: value },
+    }));
   };
 
   const handleSubmit = () => {
@@ -50,10 +67,10 @@ export default function BlogOutline({
 
   const handleNextAccordionItem = () => {
     const currentIndex = blogSections.findIndex(
-      (s) => s.title === openAccordionItem
+      (s) => s.header === openAccordionItem
     );
     if (currentIndex < blogSections.length - 1) {
-      setOpenAccordionItem(blogSections[currentIndex + 1].title);
+      setOpenAccordionItem(blogSections[currentIndex + 1].header);
     }
   };
 
@@ -75,20 +92,45 @@ export default function BlogOutline({
           onValueChange={setOpenAccordionItem}
         >
           {blogSections.map((section, index) => (
-            <AccordionItem value={section.title} key={index}>
-              <AccordionTrigger>{section.title}</AccordionTrigger>
-              <AccordionContent>
-                <p className="mb-2 text-sm text-muted-foreground">
-                  {section.description}
-                </p>
-                <Textarea
-                  placeholder={section.placeholder}
-                  value={sections[section.title] || ""}
-                  onChange={(e) =>
-                    handleSectionChange(section.title, e.target.value)
-                  }
-                  className="min-h-[150px]"
-                />
+            <AccordionItem value={section.header} key={index}>
+              <AccordionTrigger>
+                {sections[section.header]?.header || section.header}
+              </AccordionTrigger>
+              <AccordionContent className="ml-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`header-${index}`} className="">
+                    Section Header
+                  </Label>
+                  <Input
+                    id={`header-${index}`}
+                    value={sections[section.header]?.header || ""}
+                    onChange={(e) =>
+                      handleSectionChange(
+                        section.header,
+                        "header",
+                        e.target.value
+                      )
+                    }
+                    className=""
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`description-${index}`}>
+                    Section Content
+                  </Label>
+                  <Textarea
+                    id={`description-${index}`}
+                    value={sections[section.header]?.description || ""}
+                    onChange={(e) =>
+                      handleSectionChange(
+                        section.header,
+                        "description",
+                        e.target.value
+                      )
+                    }
+                    className="min-h-[150px]"
+                  />
+                </div>
                 {index < blogSections.length - 1 && (
                   <Button
                     variant="secondary"

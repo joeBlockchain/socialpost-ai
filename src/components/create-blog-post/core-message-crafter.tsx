@@ -26,40 +26,43 @@ interface SUCCESsPrinciple {
 const successPrinciples: SUCCESsPrinciple[] = [
   {
     name: "Simple",
-    description: "Distill the core message of the SaaS creation journey",
-    placeholder:
-      "E.g., 'Building a SaaS is about solving real problems efficiently'",
+    description:
+      "Strip an idea to its core. Find the most essential concept and express it succinctly.",
+    placeholder: "'Freedom is the power to choose our own chains.'",
   },
   {
     name: "Unexpected",
     description:
-      "Identify surprising elements or unconventional choices in the process",
-    placeholder: "E.g., 'We chose to launch without a pricing model'",
+      "Grab people's attention by surprising them. Break a pattern or defy expectations.",
+    placeholder:
+      "'The most important scientific revolutions all include, as their only common feature, the dethronement of human arrogance from one pedestal after another of previous convictions about our centrality in the cosmos.'",
   },
   {
     name: "Concrete",
-    description: "Focus on tangible steps and real-world examples",
-    placeholder:
-      "E.g., 'We reduced server costs by 50% by optimizing our database queries'",
+    description:
+      "Make ideas clear by explaining them in terms of human actions and sensory information.",
+    placeholder: "'Put your money where your mouth is.'",
   },
   {
     name: "Credible",
-    description: "Highlight the developer's expertise or unique insights",
+    description:
+      "Help people believe and agree with your ideas using supportive evidence or authorities.",
     placeholder:
-      "E.g., 'With 10 years of experience in scaling applications, I knew we had to focus on...'",
+      "'A Cornell University study found that people eat 22% more when using a 12-inch plate instead of a 10-inch plate.'",
   },
   {
     name: "Emotional",
-    description: "Capture the ups and downs of the development journey",
+    description:
+      "Make people care about your ideas by appealing to things that matter to them.",
     placeholder:
-      "E.g., 'The moment we got our first paying customer, we felt a rush of validation'",
+      "'If we don't act now, by the time today's children are middle-aged, the rainforests will be gone.'",
   },
   {
     name: "Stories",
     description:
-      "Structure the post as a narrative of the developer's experience",
+      "Use narratives to inspire and motivate people to act on your ideas.",
     placeholder:
-      "E.g., 'It all started when I noticed a recurring problem in my daily workflow...'",
+      "'In 1975, a young man dropped out of Harvard to start a company in his garage. That company became Microsoft, and that man was Bill Gates.'",
   },
 ];
 
@@ -122,18 +125,20 @@ export default function CoreMessageCrafter({
           {successPrinciples.map((principle, index) => (
             <AccordionItem value={principle.name} key={index}>
               <AccordionTrigger>{principle.name}</AccordionTrigger>
-              <AccordionContent>
-                <p className="mb-2 text-sm text-muted-foreground">
-                  {principle.description}
-                </p>
+              <AccordionContent className="ml-4">
+                <p className="mb-2 text-base">{principle.description}</p>
                 <Textarea
-                  placeholder={principle.placeholder}
                   value={principles[principle.name.toLowerCase()]}
                   onChange={(e) =>
                     handlePrincipleChange(principle.name, e.target.value)
                   }
                   className="min-h-[100px]"
                 />
+
+                <p className="mt-2 text-sm text-muted-foreground">
+                  <strong>Example:</strong> {principle.placeholder}
+                </p>
+
                 {index < successPrinciples.length - 1 && (
                   <Button
                     variant="secondary"
