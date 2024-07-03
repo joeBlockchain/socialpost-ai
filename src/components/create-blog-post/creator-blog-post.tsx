@@ -24,6 +24,12 @@ interface TargetAudienceData {
   }>;
 }
 
+interface BlogSection {
+  title: string;
+  description: string;
+  placeholder: string;
+}
+
 export default function CreateBlogPost() {
   const [files, setFiles] = useState<File[]>([]);
   const [targetAudienceData, setTargetAudienceData] =
@@ -37,6 +43,9 @@ export default function CreateBlogPost() {
     string,
     string
   > | null>(null);
+  const [blogOutlineData, setBlogOutlineData] = useState<BlogSection[] | null>(
+    null
+  );
 
   const fetchBlogStrategy = async (currentData: TargetAudienceData | null) => {
     const formData = new FormData();
@@ -115,17 +124,42 @@ export default function CreateBlogPost() {
     }
   };
 
-  const handleCoreMessageSubmit = (coreMessage: Record<string, string>) => {
+  const handleCoreMessageSubmit = async (
+    coreMessage: Record<string, string>
+  ) => {
+    console.log("Core Message:", coreMessage);
+    setCoreMessageData(coreMessage);
+    await fetchBlogOutline(coreMessage);
+  };
+
+  const fetchBlogOutline = async (coreMessage: Record<string, string>) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
+    formData.append("coreMessageData", JSON.stringify(coreMessage));
+
+    try {
+      const res = await fetch("/api/blog-outline", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch blog outline");
+      }
+
+      const data = await res.json();
+      setBlogOutlineData(data.outlineData.blogSections);
+    } catch (err) {
+      console.error("Error in fetchBlogOutline:", err);
+    }
+  };
+
+  const handleBlogOutlineSubmit = (coreMessage: Record<string, string>) => {
     console.log("Core Message:", coreMessage);
     // Store the core message and move to the next step
   };
 
   const handleBlogStructureSubmit = (coreMessage: Record<string, string>) => {
-    console.log("Core Message:", coreMessage);
-    // Store the core message and move to the next step
-  };
-
-  const handleBlogOutlineSubmit = (coreMessage: Record<string, string>) => {
     console.log("Core Message:", coreMessage);
     // Store the core message and move to the next step
   };
@@ -165,7 +199,10 @@ export default function CreateBlogPost() {
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
           <span className="">5</span>
         </div>
-        <BlogOutline onSubmit={handleBlogOutlineSubmit} />
+        <BlogOutline
+          onSubmit={handleBlogOutlineSubmit}
+          blogSections={blogOutlineData || []}
+        />
       </div>
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">

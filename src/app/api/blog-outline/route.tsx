@@ -7,12 +7,24 @@ interface ReaderObjectiveData {
   blogGoals: string;
 }
 
+interface CoreMessageData {
+  simple: string;
+  unexpected: string;
+  concrete: string;
+  credible: string;
+  emotional: string;
+  stories: string;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
     const readerObjectiveData: ReaderObjectiveData = JSON.parse(
       formData.get("readerObjectiveData") as string
+    );
+    const coreMessageData: CoreMessageData = JSON.parse(
+      formData.get("coreMessageData") as string
     );
 
     // Process files and extract their content
@@ -33,7 +45,7 @@ export async function POST(req: NextRequest) {
 
     const msg = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",
-      max_tokens: 1000,
+      max_tokens: 1500,
       temperature: 0,
       messages: [
         {
@@ -41,35 +53,38 @@ export async function POST(req: NextRequest) {
           content: [
             {
               type: "text",
-              text: `You are an AI assistant tasked with helping a user craft the core message for their blog post using the SUCCESs principles from "Made to Stick". Based on the provided content and reader objective data, generate suggestions for each principle. Here's the input:
+              text: `You are an AI assistant tasked with creating a blog outline based on the provided content, reader objective data, and core message. Generate an outline with 5 sections, including an introduction and conclusion. For each section, provide a title, description, and placeholder example. Here's the input:
 
-                Reference Files:
-                ${referenceFilesContent}
+Reference Files:
+${referenceFilesContent}
 
-                Reader Objective Data:
-                Target Audience: ${readerObjectiveData.targetAudience}
-                Audience Goals: ${readerObjectiveData.audienceGoals}
-                Blog Goals: ${readerObjectiveData.blogGoals}
+Reader Objective Data:
+${JSON.stringify(readerObjectiveData, null, 2)}
 
-                Please provide your suggestions in the following JSON format:
+Core Message Data:
+${JSON.stringify(coreMessageData, null, 2)}
 
-                <jsonResponse>
-                {
-                "simple": "A concise, core message for the SaaS creation journey",
-                "unexpected": "A surprising element or unconventional choice in the process",
-                "concrete": "A tangible step or real-world example from the SaaS development",
-                "credible": "A statement highlighting the developer's expertise or unique insights",
-                "emotional": "A description of an emotional moment in the development journey",
-                "stories": "A narrative hook or story element from the developer's experience"
-                }
-                </jsonResponse>
+Please provide your outline in the following JSON format:
 
-                Ensure that your suggestions are tailored to the target audience and align with the stated audience and blog goals. Each suggestion should be a complete sentence or short paragraph, ready to be used in the blog post.
+<jsonResponse>
+{
+  "blogSections": [
+    {
+      "title": "Section Title",
+      "description": "Brief description of the section's purpose and content",
+      "placeholder": "Example or placeholder text for this section"
+    },
+    // ... (repeat for all 5 sections)
+  ]
+}
+</jsonResponse>
 
-                <errorResponse>
-                If there is an issue following the instructions, please provide the reason you cannot comply within this error tag.
-                </errorResponse>
-                `,
+Ensure that the outline is tailored to the target audience, aligns with the stated goals, and incorporates elements from the core message. The sections should flow logically and tell a compelling story about the SaaS development journey.
+
+<errorResponse>
+If there is an issue following the instructions, please provide the reason you cannot comply within this error tag.
+</errorResponse>
+`,
             },
           ],
         },
@@ -90,17 +105,17 @@ export async function POST(req: NextRequest) {
       .trim();
 
     if (jsonResponse) {
-      const coreMessageData = JSON.parse(jsonResponse);
+      const outlineData = JSON.parse(jsonResponse);
       return NextResponse.json(
         {
-          coreMessageData,
+          outlineData,
           errorResponse,
         },
         { status: 200 }
       );
     } else {
       return NextResponse.json(
-        { error: "Failed to generate core message data" },
+        { error: "Failed to generate blog outline" },
         { status: 500 }
       );
     }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -15,6 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ArrowRight } from "lucide-react";
 
 interface BlogSection {
   title: string;
@@ -22,52 +23,22 @@ interface BlogSection {
   placeholder: string;
 }
 
-const blogSections: BlogSection[] = [
-  {
-    title: "Attention-Grabbing Introduction",
-    description:
-      "Start with a hook related to the core message. Briefly introduce the SaaS app and its purpose.",
-    placeholder:
-      "E.g., 'Imagine a world where creating beautiful, responsive websites is as easy as dragging and dropping elements...'",
-  },
-  {
-    title: "Developer's Journey",
-    description:
-      "Narrate the development process, focusing on relatable experiences. Highlight challenges and solutions.",
-    placeholder:
-      "E.g., 'When I first started building this SaaS, I never imagined the rollercoaster ride that awaited me...'",
-  },
-  {
-    title: "Technical Insights",
-    description:
-      "Share valuable technical details, tailored to the audience's level. Use analogies to explain complex concepts.",
-    placeholder:
-      "E.g., 'At the heart of our SaaS is a powerful algorithm that works like a skilled librarian, efficiently organizing and retrieving information...'",
-  },
-  {
-    title: "Lessons Learned",
-    description:
-      "Emphasize key takeaways applicable to the reader's own projects.",
-    placeholder:
-      "E.g., 'One of the most valuable lessons I learned was the importance of user feedback early in the development process...'",
-  },
-  {
-    title: "Call to Action",
-    description:
-      "Encourage readers to take a specific next step (e.g., start their own project, try a new technique).",
-    placeholder:
-      "E.g., 'Ready to start your own SaaS journey? Take the first step today by signing up for our free developer toolkit...'",
-  },
-];
-
 interface BlogOutlineProps {
   onSubmit: (data: Record<string, string>) => void;
+  blogSections: BlogSection[];
 }
 
-export default function BlogOutline({ onSubmit }: BlogOutlineProps) {
-  const [sections, setSections] = useState<Record<string, string>>(
-    Object.fromEntries(blogSections.map((s) => [s.title, ""]))
-  );
+export default function BlogOutline({
+  onSubmit,
+  blogSections,
+}: BlogOutlineProps) {
+  const [sections, setSections] = useState<Record<string, string>>({});
+  const [openAccordionItem, setOpenAccordionItem] = useState<
+    string | undefined
+  >(blogSections[0]?.title);
+  useEffect(() => {
+    setSections(Object.fromEntries(blogSections.map((s) => [s.title, ""])));
+  }, [blogSections]);
 
   const handleSectionChange = (title: string, content: string) => {
     setSections((prev) => ({ ...prev, [title]: content }));
@@ -75,6 +46,15 @@ export default function BlogOutline({ onSubmit }: BlogOutlineProps) {
 
   const handleSubmit = () => {
     onSubmit(sections);
+  };
+
+  const handleNextAccordionItem = () => {
+    const currentIndex = blogSections.findIndex(
+      (s) => s.title === openAccordionItem
+    );
+    if (currentIndex < blogSections.length - 1) {
+      setOpenAccordionItem(blogSections[currentIndex + 1].title);
+    }
   };
 
   return (
@@ -87,7 +67,13 @@ export default function BlogOutline({ onSubmit }: BlogOutlineProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full"
+          value={openAccordionItem}
+          onValueChange={setOpenAccordionItem}
+        >
           {blogSections.map((section, index) => (
             <AccordionItem value={section.title} key={index}>
               <AccordionTrigger>{section.title}</AccordionTrigger>
@@ -97,20 +83,31 @@ export default function BlogOutline({ onSubmit }: BlogOutlineProps) {
                 </p>
                 <Textarea
                   placeholder={section.placeholder}
-                  value={sections[section.title]}
+                  value={sections[section.title] || ""}
                   onChange={(e) =>
                     handleSectionChange(section.title, e.target.value)
                   }
                   className="min-h-[150px]"
                 />
+                {index < blogSections.length - 1 && (
+                  <Button
+                    variant="secondary"
+                    onClick={handleNextAccordionItem}
+                    className="mt-4"
+                  >
+                    Next
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleSubmit} className="mt-4">
-          Confirm Blog Outline
+      <CardFooter className="flex justify-end">
+        <Button variant="secondary" onClick={handleSubmit} className="">
+          Next
+          <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardFooter>
     </Card>

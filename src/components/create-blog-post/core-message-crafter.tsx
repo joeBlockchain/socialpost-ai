@@ -150,8 +150,8 @@ export default function CoreMessageCrafter({
         </Accordion>
       </CardContent>
       <CardFooter className="flex justify-end">
-        <Button variant="secondary" onClick={handleSubmit} className="mt-4">
-          Submit
+        <Button variant="secondary" onClick={handleSubmit} className="">
+          Next
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardFooter>
