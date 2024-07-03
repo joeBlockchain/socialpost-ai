@@ -3,20 +3,81 @@
 import { useState } from "react";
 
 import ProvideRefContent from "./provide-ref-content";
-import CustomInstructions from "./custom-instructions";
 import ReaderObjectiveAnalyzer from "./reader-objective-analyzer";
 import CoreMessageCrafter from "./core-message-crafter";
 import EngagementOptimization from "./engagement-optimization";
 import BlogOutline from "./blog-outline";
 import BlogDraft from "./blog-draft";
 
+// Add this interface
+interface TargetAudienceData {
+  targetAudience: {
+    name: string;
+    description: string;
+  };
+  audienceInterest: Array<{
+    reason: string;
+    explanation: string;
+  }>;
+  authorMotivation: Array<{
+    reason: string;
+    explanation: string;
+  }>;
+}
+
 export default function CreateBlogPost() {
   const [files, setFiles] = useState<File[]>([]);
+  const [targetAudienceData, setTargetAudienceData] =
+    useState<TargetAudienceData | null>(null);
+  const [previousTargetAudiences, setPreviousTargetAudiences] = useState<
+    TargetAudienceData[]
+  >([]);
 
-  const handleCustomInstructions = (instructions: string) => {
-    // Handle the submitted instructions, e.g., store them in state
-    console.log("Custom instructions:", instructions);
-    // Move to the next step
+  const fetchBlogStrategy = async (currentData: TargetAudienceData | null) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+
+    // Send all previous target audiences, including the current one
+    const allTargetAudiences = currentData
+      ? [...previousTargetAudiences, currentData]
+      : previousTargetAudiences;
+
+    formData.append(
+      "previousTargetAudiences",
+      JSON.stringify(allTargetAudiences)
+    );
+
+    console.log("called fetchBlogStrategy");
+    try {
+      const res = await fetch("/api/claude", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch blog strategy");
+      }
+
+      const data = await res.json();
+      console.log("JSON Response:", data.jsonResponse);
+      console.log("Error Response:", data.errorResponse);
+
+      if (data.jsonResponse) {
+        const parsedResponse: TargetAudienceData = JSON.parse(
+          data.jsonResponse
+        );
+        console.log("Parsed JSON Response:", parsedResponse);
+        setTargetAudienceData(parsedResponse);
+
+        // Add the new target audience to the previous ones
+        setPreviousTargetAudiences((prev) => [...prev, parsedResponse]);
+      }
+    } catch (err) {
+      console.error("Error in fetchBlogStrategy:", err);
+    }
+  };
+
+  const handleSubmitRefContent = async () => {
+    await fetchBlogStrategy(null);
   };
 
   const handleReaderObjectiveAnalyzerSubmit = (data: {
@@ -49,13 +110,11 @@ export default function CreateBlogPost() {
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
           <span className="">1</span>
         </div>
-        <ProvideRefContent files={files} setFiles={setFiles} />
-      </div>
-      <div className="flex flex-row space-x-4 w-full">
-        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">2</span>
-        </div>
-        <CustomInstructions onSubmit={handleCustomInstructions} />
+        <ProvideRefContent
+          files={files}
+          setFiles={setFiles}
+          onSubmit={handleSubmitRefContent}
+        />
       </div>
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
@@ -63,6 +122,8 @@ export default function CreateBlogPost() {
         </div>
         <ReaderObjectiveAnalyzer
           onSubmit={handleReaderObjectiveAnalyzerSubmit}
+          targetAudienceData={targetAudienceData}
+          fetchBlogStrategy={fetchBlogStrategy}
         />
       </div>
       <div className="flex flex-row space-x-4 w-full">

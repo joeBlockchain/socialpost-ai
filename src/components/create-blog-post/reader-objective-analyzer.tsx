@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea"; // Assuming you have a Textarea component
+import { ArrowLeft, ArrowRight, Car } from "lucide-react";
 
 interface Option {
   value: string;
@@ -22,46 +23,74 @@ interface OptionSelectorProps {
   options: Option[];
   selected: string;
   onSelect: (value: string) => void;
-  onCustom: (value: string) => void;
+  customInput?: string;
+  onCustomInputChange?: (value: string) => void;
 }
 
-const OptionSelector: React.FC<OptionSelectorProps> = ({
+function OptionSelector({
   title,
   options,
   selected,
   onSelect,
-  onCustom,
-}) => (
-  <Card className="mb-6">
-    <CardHeader>
-      <CardTitle>{title}</CardTitle>
-    </CardHeader>
-    <CardContent>
+  customInput,
+  onCustomInputChange,
+}: OptionSelectorProps) {
+  return (
+    <div className="mb-4">
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
       <RadioGroup value={selected} onValueChange={onSelect}>
         {options.map((option, index) => (
-          <div className="flex flex-col mb-2" key={index}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value={option.value} id={`${title}-${index}`} />
-              <Label htmlFor={`${title}-${index}`}>{option.value}</Label>
-            </div>
-            <p className="text-sm text-muted-foreground ml-6">
-              {option.rationale}
-            </p>
+          <div key={index} className="flex space-x-2 mb-2">
+            <RadioGroupItem
+              className="flex-none mr-2"
+              value={option.value}
+              id={`${title}-${index}`}
+            />
+            <Label className="space-y-1" htmlFor={`${title}-${index}`}>
+              <span className="font-medium ">{option.value}</span>
+              <p className="text-sm text-muted-foreground">
+                {option.rationale}
+              </p>
+            </Label>
           </div>
         ))}
-        <div className="flex items-center space-x-2 mt-4">
-          <RadioGroupItem value="custom" id={`${title}-custom`} />
-          <Label htmlFor={`${title}-custom`}>Custom:</Label>
-          <Input
-            placeholder="Enter your own"
-            onChange={(e) => onCustom(e.target.value)}
-            className="ml-2"
+        <div className="flex space-x-2 mb-2">
+          <RadioGroupItem
+            className="flex-none mr-2"
+            value="custom"
+            id={`${title}-custom`}
           />
+          <Label className="space-y-1" htmlFor={`${title}-custom`}>
+            <span className="font-medium ">Custom</span>
+          </Label>
         </div>
       </RadioGroup>
-    </CardContent>
-  </Card>
-);
+      {selected === "custom" && onCustomInputChange && (
+        <Textarea
+          value={customInput}
+          onChange={(e) => onCustomInputChange(e.target.value)}
+          placeholder={`Enter custom ${title.toLowerCase()}`}
+          className="mt-2"
+        />
+      )}
+    </div>
+  );
+}
+
+interface TargetAudienceData {
+  targetAudience: {
+    name: string;
+    description: string;
+  };
+  audienceInterest: Array<{
+    reason: string;
+    explanation: string;
+  }>;
+  authorMotivation: Array<{
+    reason: string;
+    explanation: string;
+  }>;
+}
 
 interface ReaderObjectiveAnalyzerProps {
   onSubmit: (data: {
@@ -69,117 +98,150 @@ interface ReaderObjectiveAnalyzerProps {
     audienceGoals: string;
     blogGoals: string;
   }) => void;
+  targetAudienceData: TargetAudienceData | null;
+  fetchBlogStrategy: (currentData: TargetAudienceData | null) => Promise<void>;
 }
 
 export default function ReaderObjectiveAnalyzer({
   onSubmit,
+  targetAudienceData,
+  fetchBlogStrategy,
 }: ReaderObjectiveAnalyzerProps) {
-  const [targetAudience, setTargetAudience] = useState("");
-  const [audienceGoals, setAudienceGoals] = useState("");
-  const [blogGoals, setBlogGoals] = useState("");
+  const [selectedTargetAudience, setSelectedTargetAudience] = useState("");
   const [customTargetAudience, setCustomTargetAudience] = useState("");
+  const [selectedAudienceGoals, setSelectedAudienceGoals] = useState("");
   const [customAudienceGoals, setCustomAudienceGoals] = useState("");
+  const [selectedBlogGoals, setSelectedBlogGoals] = useState("");
   const [customBlogGoals, setCustomBlogGoals] = useState("");
+
+  useEffect(() => {
+    if (targetAudienceData) {
+      setSelectedTargetAudience(targetAudienceData.targetAudience.name);
+      setSelectedAudienceGoals(
+        targetAudienceData.audienceInterest[0]?.reason || ""
+      );
+      setSelectedBlogGoals(
+        targetAudienceData.authorMotivation[0]?.reason || ""
+      );
+    }
+  }, [targetAudienceData]);
 
   const handleSubmit = () => {
     onSubmit({
       targetAudience:
-        targetAudience === "custom" ? customTargetAudience : targetAudience,
+        selectedTargetAudience === "custom"
+          ? customTargetAudience
+          : selectedTargetAudience,
       audienceGoals:
-        audienceGoals === "custom" ? customAudienceGoals : audienceGoals,
-      blogGoals: blogGoals === "custom" ? customBlogGoals : blogGoals,
+        selectedAudienceGoals === "custom"
+          ? customAudienceGoals
+          : selectedAudienceGoals,
+      blogGoals:
+        selectedBlogGoals === "custom" ? customBlogGoals : selectedBlogGoals,
     });
   };
 
-  // These would be populated by AI analysis in a real scenario
+  const handleNewAISuggestions = () => {
+    console.log("fetching new AI suggestions");
+    fetchBlogStrategy(targetAudienceData);
+  };
+
+  if (!targetAudienceData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Reader Objective Analyzer</CardTitle>
+          <CardDescription>
+            Review the AI-generated target audience and goals for your blog
+            post.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Pending submision of files...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const targetAudienceOptions: Option[] = [
     {
-      value: "Aspiring SaaS entrepreneurs",
-      rationale:
-        "They are looking for insights to start their own SaaS business.",
-    },
-    {
-      value: "Junior developers",
-      rationale:
-        "They need guidance and practical knowledge to grow in their careers.",
-    },
-    {
-      value: "Tech enthusiasts",
-      rationale: "They are interested in the latest trends and technologies.",
+      value: targetAudienceData.targetAudience.name,
+      rationale: targetAudienceData.targetAudience.description,
     },
   ];
 
-  const audienceGoalsOptions: Option[] = [
-    {
-      value: "Gain practical insights",
-      rationale: "They want actionable advice they can apply immediately.",
-    },
-    {
-      value: "Find inspiration",
-      rationale:
-        "They are looking for motivational content to spark new ideas.",
-    },
-    {
-      value: "Acquire technical knowledge",
-      rationale:
-        "They seek in-depth technical information to enhance their skills.",
-    },
-  ];
+  const audienceGoalsOptions: Option[] =
+    targetAudienceData.audienceInterest.map((interest) => ({
+      value: interest.reason,
+      rationale: interest.explanation,
+    }));
 
-  const blogGoalsOptions: Option[] = [
-    {
-      value: "Inspire action",
-      rationale:
-        "Encourage readers to take specific actions based on the content.",
-    },
-    {
-      value: "Educate readers",
-      rationale:
-        "Provide valuable information that helps readers learn something new.",
-    },
-    {
-      value: "Showcase a unique approach",
-      rationale: "Highlight a distinctive method or perspective on a topic.",
-    },
-  ];
+  const blogGoalsOptions: Option[] = targetAudienceData.authorMotivation.map(
+    (motivation) => ({
+      value: motivation.reason,
+      rationale: motivation.explanation,
+    })
+  );
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Reader Objective Analyzer</CardTitle>
-        <CardDescription>
-          Tell us about your target audience and the goals you want to achieve
-          with your blog post.
-        </CardDescription>
+      <CardHeader className="flex flex-row justify-between">
+        <div>
+          <CardTitle>Reader Objective Analyzer</CardTitle>
+          <CardDescription>
+            Review the AI-generated target audience and goals for your blog
+            post.
+          </CardDescription>
+        </div>
+        <div className="border border-border rounded-md p-1 flex items-center space-x-2">
+          <Button variant="ghost" size="icon">
+            <ArrowLeft size={16} />
+          </Button>
+          <div className="border-l h-6"></div>
+          <Button variant="ghost" size="icon">
+            <ArrowRight size={16} />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <OptionSelector
           title="Target Audience"
           options={targetAudienceOptions}
-          selected={targetAudience}
-          onSelect={setTargetAudience}
-          onCustom={setCustomTargetAudience}
+          selected={selectedTargetAudience}
+          onSelect={setSelectedTargetAudience}
+          customInput={customTargetAudience}
+          onCustomInputChange={setCustomTargetAudience}
         />
 
         <OptionSelector
           title="Audience Goals"
           options={audienceGoalsOptions}
-          selected={audienceGoals}
-          onSelect={setAudienceGoals}
-          onCustom={setCustomAudienceGoals}
+          selected={selectedAudienceGoals}
+          onSelect={setSelectedAudienceGoals}
+          customInput={customAudienceGoals}
+          onCustomInputChange={setCustomAudienceGoals}
         />
 
         <OptionSelector
           title="Blog Post Goals"
           options={blogGoalsOptions}
-          selected={blogGoals}
-          onSelect={setBlogGoals}
-          onCustom={setCustomBlogGoals}
+          selected={selectedBlogGoals}
+          onSelect={setSelectedBlogGoals}
+          customInput={customBlogGoals}
+          onCustomInputChange={setCustomBlogGoals}
         />
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleSubmit} className="mt-4">
-          Confirm Selections
+      <CardFooter className="flex justify-between gap-3">
+        <Button
+          variant="outline"
+          onClick={handleNewAISuggestions}
+          className="mt-4"
+        >
+          New AI Suggestions
+        </Button>
+        <Button variant="secondary" onClick={handleSubmit} className="mt-4">
+          Next
+          <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardFooter>
     </Card>

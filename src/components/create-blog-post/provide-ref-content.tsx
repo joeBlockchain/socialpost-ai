@@ -14,18 +14,25 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CloudUpload, Trash2 } from "lucide-react";
+import { ArrowRight, CloudUpload, Trash2 } from "lucide-react";
 
 interface ProvideRefContentProps {
   files: File[];
   setFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  onSubmit: () => void;
 }
 
 export default function ProvideRefContent({
   files,
   setFiles,
+  onSubmit,
 }: ProvideRefContentProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSubmit();
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFiles(Array.from(e.target.files || []));
@@ -151,20 +158,16 @@ export default function ProvideRefContent({
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex space-x-2">
+      <CardFooter className="flex space-x-2 justify-end">
         <Button
           variant="secondary"
-          onClick={() => console.log("Process files", files)}
+          onClick={(e) =>
+            handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>)
+          }
           disabled={files.length === 0}
         >
-          Process Files
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => setFiles([])}
-          disabled={files.length === 0}
-        >
-          Delete All Files
+          Next
+          <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardFooter>
     </Card>
