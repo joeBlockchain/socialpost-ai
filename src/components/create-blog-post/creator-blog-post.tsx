@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import ProvideRefContent from "./provide-ref-content";
 import ReaderObjectiveAnalyzer from "./reader-objective-analyzer";
 import CoreMessageCrafter from "./core-message-crafter";
@@ -32,6 +31,12 @@ export default function CreateBlogPost() {
   const [previousTargetAudiences, setPreviousTargetAudiences] = useState<
     TargetAudienceData[]
   >([]);
+  const [readerObjectiveData, setReaderObjectiveData] =
+    useState<ReaderObjectiveData | null>(null);
+  const [coreMessageData, setCoreMessageData] = useState<Record<
+    string,
+    string
+  > | null>(null);
 
   const fetchBlogStrategy = async (currentData: TargetAudienceData | null) => {
     const formData = new FormData();
@@ -49,7 +54,7 @@ export default function CreateBlogPost() {
 
     console.log("called fetchBlogStrategy");
     try {
-      const res = await fetch("/api/claude", {
+      const res = await fetch("/api/reader-objective", {
         method: "POST",
         body: formData,
       });
@@ -80,13 +85,34 @@ export default function CreateBlogPost() {
     await fetchBlogStrategy(null);
   };
 
-  const handleReaderObjectiveAnalyzerSubmit = (data: {
-    targetAudience: string;
-    audienceGoals: string;
-    blogGoals: string;
-  }) => {
-    console.log("Audience and Goals:", data);
-    // Store the selections and move to the next step
+  const handleReaderObjectiveAnalyzerSubmit = async (
+    data: ReaderObjectiveData
+  ) => {
+    setReaderObjectiveData(data);
+    await fetchCoreMessageData(data);
+  };
+
+  const fetchCoreMessageData = async (
+    readerObjectiveData: ReaderObjectiveData
+  ) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
+
+    try {
+      const res = await fetch("/api/core-message", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch core message data");
+      }
+
+      const data = await res.json();
+      setCoreMessageData(data.coreMessageData);
+    } catch (err) {
+      console.error("Error in fetchCoreMessageData:", err);
+    }
   };
 
   const handleCoreMessageSubmit = (coreMessage: Record<string, string>) => {
@@ -130,7 +156,10 @@ export default function CreateBlogPost() {
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
           <span className="">4</span>
         </div>
-        <CoreMessageCrafter onSubmit={handleCoreMessageSubmit} />
+        <CoreMessageCrafter
+          onSubmit={handleCoreMessageSubmit}
+          aiGeneratedContent={coreMessageData}
+        />
       </div>
       <div className="flex flex-row space-x-4 w-full">
         <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">

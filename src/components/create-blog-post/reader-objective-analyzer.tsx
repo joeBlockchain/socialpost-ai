@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea"; // Assuming you have a Textarea component
-import { ArrowLeft, ArrowRight, Car } from "lucide-react";
+import { ArrowLeft, ArrowRight, Car, RotateCcw } from "lucide-react";
 
 interface Option {
   value: string;
@@ -193,7 +193,7 @@ export default function ReaderObjectiveAnalyzer({
             post.
           </CardDescription>
         </div>
-        <div className="border border-border rounded-md p-1 flex items-center space-x-2">
+        {/* <div className="border border-border rounded-md p-1 flex items-center space-x-2">
           <Button variant="ghost" size="icon">
             <ArrowLeft size={16} />
           </Button>
@@ -201,7 +201,14 @@ export default function ReaderObjectiveAnalyzer({
           <Button variant="ghost" size="icon">
             <ArrowRight size={16} />
           </Button>
-        </div>
+        </div> */}
+        <Button
+          variant="outline"
+          onClick={handleNewAISuggestions}
+          className="mt-4"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </Button>
       </CardHeader>
       <CardContent>
         <OptionSelector
@@ -231,15 +238,8 @@ export default function ReaderObjectiveAnalyzer({
           onCustomInputChange={setCustomBlogGoals}
         />
       </CardContent>
-      <CardFooter className="flex justify-between gap-3">
-        <Button
-          variant="outline"
-          onClick={handleNewAISuggestions}
-          className="mt-4"
-        >
-          New AI Suggestions
-        </Button>
-        <Button variant="secondary" onClick={handleSubmit} className="mt-4">
+      <CardFooter className="flex justify-end">
+        <Button variant="secondary" onClick={handleSubmit} className="">
           Next
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>

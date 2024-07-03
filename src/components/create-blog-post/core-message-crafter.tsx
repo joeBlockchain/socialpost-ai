@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -15,6 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ArrowRight } from "lucide-react";
 
 interface SUCCESsPrinciple {
   name: string;
@@ -64,14 +65,25 @@ const successPrinciples: SUCCESsPrinciple[] = [
 
 interface CoreMessageCrafterProps {
   onSubmit: (data: Record<string, string>) => void;
+  aiGeneratedContent: Record<string, string> | null;
 }
 
 export default function CoreMessageCrafter({
   onSubmit,
+  aiGeneratedContent,
 }: CoreMessageCrafterProps) {
   const [principles, setPrinciples] = useState<Record<string, string>>(
     Object.fromEntries(successPrinciples.map((p) => [p.name.toLowerCase(), ""]))
   );
+  const [openAccordionItem, setOpenAccordionItem] = useState<
+    string | undefined
+  >(successPrinciples[0].name);
+
+  useEffect(() => {
+    if (aiGeneratedContent) {
+      setPrinciples(aiGeneratedContent);
+    }
+  }, [aiGeneratedContent]);
 
   const handlePrincipleChange = (name: string, value: string) => {
     setPrinciples((prev) => ({ ...prev, [name.toLowerCase()]: value }));
@@ -79,6 +91,15 @@ export default function CoreMessageCrafter({
 
   const handleSubmit = () => {
     onSubmit(principles);
+  };
+
+  const handleNextAccordionItem = () => {
+    const currentIndex = successPrinciples.findIndex(
+      (p) => p.name === openAccordionItem
+    );
+    if (currentIndex < successPrinciples.length - 1) {
+      setOpenAccordionItem(successPrinciples[currentIndex + 1].name);
+    }
   };
 
   return (
@@ -91,7 +112,13 @@ export default function CoreMessageCrafter({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full"
+          value={openAccordionItem}
+          onValueChange={setOpenAccordionItem}
+        >
           {successPrinciples.map((principle, index) => (
             <AccordionItem value={principle.name} key={index}>
               <AccordionTrigger>{principle.name}</AccordionTrigger>
@@ -107,14 +134,25 @@ export default function CoreMessageCrafter({
                   }
                   className="min-h-[100px]"
                 />
+                {index < successPrinciples.length - 1 && (
+                  <Button
+                    variant="secondary"
+                    onClick={handleNextAccordionItem}
+                    className="mt-4"
+                  >
+                    Next
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleSubmit} className="mt-4">
-          Confirm Core Message
+      <CardFooter className="flex justify-end">
+        <Button variant="secondary" onClick={handleSubmit} className="mt-4">
+          Submit
+          <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardFooter>
     </Card>
