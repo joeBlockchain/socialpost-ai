@@ -10,7 +10,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea"; // Assuming you have a Textarea component
+import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, RotateCcw } from "lucide-react";
 import {
   Accordion,
@@ -29,8 +29,8 @@ interface OptionSelectorProps {
   options: Option[];
   selected: string;
   onSelect: (value: string) => void;
-  customInput?: string;
-  onCustomInputChange?: (value: string) => void;
+  customInput: string;
+  onCustomInputChange: (value: string) => void;
 }
 
 function OptionSelector({
@@ -43,7 +43,6 @@ function OptionSelector({
 }: OptionSelectorProps) {
   return (
     <div className="">
-      {/* <h3 className="text-lg font-semibold mb-2">{title}</h3> */}
       <RadioGroup value={selected} onValueChange={onSelect}>
         {options.map((option, index) => (
           <div key={index} className="flex space-x-2 mb-2">
@@ -71,7 +70,7 @@ function OptionSelector({
           </Label>
         </div>
       </RadioGroup>
-      {selected === "custom" && onCustomInputChange && (
+      {(selected === "custom" || options.length === 0) && (
         <Textarea
           value={customInput}
           onChange={(e) => onCustomInputChange(e.target.value)}
@@ -113,11 +112,12 @@ export default function ReaderObjectiveAnalyzer({
   targetAudienceData,
   fetchBlogStrategy,
 }: ReaderObjectiveAnalyzerProps) {
-  const [selectedTargetAudience, setSelectedTargetAudience] = useState("");
+  const [selectedTargetAudience, setSelectedTargetAudience] =
+    useState("custom");
   const [customTargetAudience, setCustomTargetAudience] = useState("");
-  const [selectedAudienceGoals, setSelectedAudienceGoals] = useState("");
+  const [selectedAudienceGoals, setSelectedAudienceGoals] = useState("custom");
   const [customAudienceGoals, setCustomAudienceGoals] = useState("");
-  const [selectedBlogGoals, setSelectedBlogGoals] = useState("");
+  const [selectedBlogGoals, setSelectedBlogGoals] = useState("custom");
   const [customBlogGoals, setCustomBlogGoals] = useState("");
   const [openAccordionItem, setOpenAccordionItem] = useState<
     string | undefined
@@ -127,10 +127,10 @@ export default function ReaderObjectiveAnalyzer({
     if (targetAudienceData) {
       setSelectedTargetAudience(targetAudienceData.targetAudience.name);
       setSelectedAudienceGoals(
-        targetAudienceData.audienceInterest[0]?.reason || ""
+        targetAudienceData.audienceInterest[0]?.reason || "custom"
       );
       setSelectedBlogGoals(
-        targetAudienceData.authorMotivation[0]?.reason || ""
+        targetAudienceData.authorMotivation[0]?.reason || "custom"
       );
     }
   }, [targetAudienceData]);
@@ -162,42 +162,28 @@ export default function ReaderObjectiveAnalyzer({
     fetchBlogStrategy(targetAudienceData);
   };
 
-  if (!targetAudienceData) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Reader Objective Analyzer</CardTitle>
-          <CardDescription>
-            Review the AI-generated target audience and goals for your blog
-            post.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Pending submision of files...</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const targetAudienceOptions: Option[] = targetAudienceData
+    ? [
+        {
+          value: targetAudienceData.targetAudience.name,
+          rationale: targetAudienceData.targetAudience.description,
+        },
+      ]
+    : [];
 
-  const targetAudienceOptions: Option[] = [
-    {
-      value: targetAudienceData.targetAudience.name,
-      rationale: targetAudienceData.targetAudience.description,
-    },
-  ];
+  const audienceGoalsOptions: Option[] = targetAudienceData
+    ? targetAudienceData.audienceInterest.map((interest) => ({
+        value: interest.reason,
+        rationale: interest.explanation,
+      }))
+    : [];
 
-  const audienceGoalsOptions: Option[] =
-    targetAudienceData.audienceInterest.map((interest) => ({
-      value: interest.reason,
-      rationale: interest.explanation,
-    }));
-
-  const blogGoalsOptions: Option[] = targetAudienceData.authorMotivation.map(
-    (motivation) => ({
-      value: motivation.reason,
-      rationale: motivation.explanation,
-    })
-  );
+  const blogGoalsOptions: Option[] = targetAudienceData
+    ? targetAudienceData.authorMotivation.map((motivation) => ({
+        value: motivation.reason,
+        rationale: motivation.explanation,
+      }))
+    : [];
 
   return (
     <Card className="w-full">
@@ -205,23 +191,16 @@ export default function ReaderObjectiveAnalyzer({
         <div>
           <CardTitle>Reader Objective Analyzer</CardTitle>
           <CardDescription>
-            Review the AI-generated target audience and goals for your blog
-            post.
+            {targetAudienceData
+              ? "Review the AI-generated target audience and goals for your blog post."
+              : "Define your target audience and goals for your blog post."}
           </CardDescription>
         </div>
-        {/* <div className="border border-border rounded-md p-1 flex items-center space-x-2">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="border-l h-6"></div>
-          <Button variant="ghost" size="icon">
-            <ArrowRight size={16} />
-          </Button>
-        </div> */}
         <Button
           variant="outline"
+          size="icon"
           onClick={handleNewAISuggestions}
-          className="mt-4"
+          className="ml-4"
         >
           <RotateCcw className="w-4 h-4" />
         </Button>
@@ -310,7 +289,6 @@ export default function ReaderObjectiveAnalyzer({
                   customInput={customBlogGoals}
                   onCustomInputChange={setCustomBlogGoals}
                 />
-                {/* No "Next" button for the last item */}
               </div>
             </AccordionContent>
           </AccordionItem>

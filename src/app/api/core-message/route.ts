@@ -45,9 +45,6 @@ export async function POST(req: NextRequest) {
               SUCCESs principles from "Made to Stick". Based on the provided content and reader objective data, generate 
               suggestions for each principle. 
 
-
-              
-              
               Here's the input:
 
                 Reference Files:
@@ -100,14 +97,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           coreMessageData,
-          errorResponse,
         },
         { status: 200 }
       );
-    } else {
+    } else if (errorResponse) {
       return NextResponse.json(
-        { error: "Failed to generate core message data" },
-        { status: 500 }
+        {
+          errorResponse,
+        },
+        { status: 200 }
       );
     }
   } catch (error) {

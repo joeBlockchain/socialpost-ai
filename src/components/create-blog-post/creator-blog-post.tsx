@@ -7,6 +7,8 @@ import CoreMessageCrafter from "./core-message-crafter";
 import BlogOutline from "./blog-outline";
 import BlogDraft from "./blog-draft";
 import BlogPreview from "./blog-preview";
+import { useToast } from "@/components/ui/use-toast";
+
 // Add this interface
 interface TargetAudienceData {
   targetAudience: {
@@ -35,6 +37,7 @@ interface BlogSection {
 }
 
 export default function CreateBlogPost() {
+  const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [targetAudienceData, setTargetAudienceData] =
     useState<TargetAudienceData | null>(null);
@@ -91,6 +94,12 @@ export default function CreateBlogPost() {
 
         // Add the new target audience to the previous ones
         setPreviousTargetAudiences((prev) => [...prev, parsedResponse]);
+      } else if (data.errorResponse) {
+        console.log("Error in fetchBlogStrategy:");
+        toast({
+          title: "Woops!",
+          description: data.errorResponse,
+        });
       }
     } catch (err) {
       console.error("Error in fetchBlogStrategy:", err);
@@ -126,6 +135,15 @@ export default function CreateBlogPost() {
 
       const data = await res.json();
       setCoreMessageData(data.coreMessageData);
+
+      console.log("Core message data:", data);
+
+      if (data.errorResponse) {
+        toast({
+          title: "Woops!",
+          description: data.errorResponse,
+        });
+      }
     } catch (err) {
       console.error("Error in fetchCoreMessageData:", err);
     }
@@ -154,7 +172,19 @@ export default function CreateBlogPost() {
       }
 
       const data = await res.json();
-      setBlogOutlineData(data.outlineData.blogSections);
+
+      console.log("Blog outline data:", data);
+
+      if (data) {
+        setBlogOutlineData(data.outlineData.blogSections);
+      }
+
+      if (data.errorResponse) {
+        toast({
+          title: "Woops!",
+          description: data.errorResponse,
+        });
+      }
     } catch (err) {
       console.error("Error in fetchBlogOutline:", err);
     }
@@ -193,15 +223,32 @@ export default function CreateBlogPost() {
 
       const data = await response.json();
 
-      // Update the blog draft state with the new section
+      const sectionHeader = Object.keys(outlineData)[sectionIndex];
+      const newSection = {
+        header: sectionHeader,
+        content: data.sectionContent,
+      };
+
+      // Update blogDraft state
       setBlogDraft((prev) => ({
         ...prev,
-        [Object.keys(outlineData)[sectionIndex]]: data.sectionContent,
+        [sectionHeader]: data.sectionContent,
       }));
+
+      // Update blogSections state for real-time preview
+      setBlogSections((prev) => [...prev, newSection]);
 
       // If there are more sections, fetch the next one
       if (sectionIndex < Object.keys(outlineData).length - 1) {
         await fetchBlogDraftSection(sectionIndex + 1, outlineData);
+      }
+
+      if (data.errorResponse) {
+        console.log("Error in fetchBlogStrategy:");
+        toast({
+          title: "Woops!",
+          description: data.errorResponse,
+        });
       }
     } catch (error) {
       console.error("Error fetching blog section:", error);
@@ -224,55 +271,57 @@ export default function CreateBlogPost() {
   };
 
   return (
-    <main className="space-y-5 pb-10">
-      <div className="flex flex-row space-x-4 w-full">
-        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">1</span>
+    <main className="flex flex-row gap-4 pb-10">
+      <div className="flex flex-col space-y-5 w-1/2">
+        <div className="flex flex-row space-x-4 w-full">
+          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+            <span className="">1</span>
+          </div>
+          <ProvideRefContent
+            files={files}
+            setFiles={setFiles}
+            onSubmit={handleSubmitRefContent}
+          />
         </div>
-        <ProvideRefContent
-          files={files}
-          setFiles={setFiles}
-          onSubmit={handleSubmitRefContent}
-        />
-      </div>
-      <div className="flex flex-row space-x-4 w-full">
-        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">2</span>
+        <div className="flex flex-row space-x-4 w-full">
+          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+            <span className="">2</span>
+          </div>
+          <ReaderObjectiveAnalyzer
+            onSubmit={handleReaderObjectiveAnalyzerSubmit}
+            targetAudienceData={targetAudienceData}
+            fetchBlogStrategy={fetchBlogStrategy}
+          />
         </div>
-        <ReaderObjectiveAnalyzer
-          onSubmit={handleReaderObjectiveAnalyzerSubmit}
-          targetAudienceData={targetAudienceData}
-          fetchBlogStrategy={fetchBlogStrategy}
-        />
-      </div>
-      <div className="flex flex-row space-x-4 w-full">
-        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">3</span>
+        <div className="flex flex-row space-x-4 w-full">
+          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+            <span className="">3</span>
+          </div>
+          <CoreMessageCrafter
+            onSubmit={handleCoreMessageSubmit}
+            aiGeneratedContent={coreMessageData}
+          />
         </div>
-        <CoreMessageCrafter
-          onSubmit={handleCoreMessageSubmit}
-          aiGeneratedContent={coreMessageData}
-        />
-      </div>
-      <div className="flex flex-row space-x-4 w-full">
-        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">4</span>
+        <div className="flex flex-row space-x-4 w-full">
+          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+            <span className="">4</span>
+          </div>
+          <BlogOutline
+            onSubmit={handleBlogOutlineSubmit}
+            blogSections={blogOutlineData || []}
+          />
         </div>
-        <BlogOutline
-          onSubmit={handleBlogOutlineSubmit}
-          blogSections={blogOutlineData || []}
-        />
-      </div>
-      <div className="flex flex-row space-x-4 w-full">
-        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-          <span className="">5</span>
+        <div className="flex flex-row space-x-4 w-full">
+          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+            <span className="">5</span>
+          </div>
+          <BlogDraft
+            onSubmit={handleBlogDraftSubmit}
+            blogSections={blogOutlineData || []}
+            blogOutline={blogOutline}
+            blogDraft={blogDraft}
+          />
         </div>
-        <BlogDraft
-          onSubmit={handleBlogDraftSubmit}
-          blogSections={blogOutlineData || []}
-          blogOutline={blogOutline}
-          blogDraft={blogDraft}
-        />
       </div>
       <BlogPreview blogSections={blogSections} />
     </main>

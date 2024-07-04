@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/accordion";
 import { ArrowRight } from "lucide-react";
 import { Label } from "../ui/label";
+import { Progress } from "@/components/ui/progress";
 
 interface BlogSection {
   header: string;
@@ -42,10 +43,18 @@ export default function BlogDraft({
   const [openAccordionItem, setOpenAccordionItem] = useState<
     string | undefined
   >(blogSections[0]?.header);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     setSections(blogDraft);
   }, [blogDraft]);
+
+  useEffect(() => {
+    // Calculate progress based on the number of non-empty sections
+    const completedSections = Object.values(sections).filter(Boolean).length;
+    const newProgress = (completedSections / blogSections.length) * 100;
+    setProgress(newProgress);
+  }, [sections, blogSections]);
 
   const handleSectionChange = (header: string, content: string) => {
     setSections((prev) => ({ ...prev, [header]: content }));
@@ -62,6 +71,13 @@ export default function BlogDraft({
         <CardDescription>Review and edit the blog!</CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="space-y-2">
+          <Label>Progress</Label>
+          <Progress value={progress} className="w-full" />
+          <p className="text-sm text-muted-foreground text-right">
+            {Math.round(progress)}% Complete
+          </p>
+        </div>
         <Accordion
           type="single"
           collapsible

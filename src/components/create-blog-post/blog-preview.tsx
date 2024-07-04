@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -20,19 +20,64 @@ interface BlogPreviewProps {
   blogSections: BlogSection[];
 }
 
+const renderMarkdown = (content: string) => {
+  // Convert headers
+  content = content.replace(
+    /^# (.*$)/gim,
+    '<h1 class="text-3xl font-bold my-4">$1</h1>'
+  );
+  content = content.replace(
+    /^## (.*$)/gim,
+    '<h2 class="text-2xl font-semibold my-3">$1</h2>'
+  );
+  content = content.replace(
+    /^### (.*$)/gim,
+    '<h3 class="text-xl font-medium my-2">$1</h3>'
+  );
+
+  // Convert bold and italic
+  content = content.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  content = content.replace(/\*(.*?)\*/g, "<em>$1</em>");
+
+  // Convert lists
+  content = content.replace(/^\s*\n\*/gm, "<ul>\n*");
+  content = content.replace(/^(\*(.+))\s*\n([^\*])/gm, "$1\n</ul>\n\n$3");
+  content = content.replace(/^\*(.+)/gm, "<li>$1</li>");
+
+  // Convert paragraphs
+  content = content.replace(/^\s*(\n)?(.+)/gim, function (m) {
+    return (
+      (m.trim().startsWith("<") ? "" : '<p class="my-2">') +
+      m.trim() +
+      (m.trim().startsWith("<") ? "" : "</p>")
+    );
+  });
+
+  // Remove extra lines
+  content = content.trim();
+
+  return <div dangerouslySetInnerHTML={{ __html: content }} />;
+};
+
 export default function BlogPreview({ blogSections }: BlogPreviewProps) {
   const [copied, setCopied] = useState(false);
+  const [displaySections, setDisplaySections] = useState<BlogSection[]>([]);
+
+  useEffect(() => {
+    setDisplaySections(blogSections);
+  }, [blogSections]);
 
   const copyToClipboard = () => {
-    const blogContent = blogSections
+    const blogContent = displaySections
       .map((section) => `# ${section.header}\n\n${section.content}`)
       .join("\n\n");
 
     navigator.clipboard.writeText(blogContent).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
     });
   };
+
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row justify-between">
@@ -59,15 +104,11 @@ export default function BlogPreview({ blogSections }: BlogPreviewProps) {
         </Button>
       </CardHeader>
       <CardContent>
-        {blogSections.map((section, index) => (
+        {displaySections.map((section, index) => (
           <div key={index} className="mb-6">
             <h2 className="text-2xl font-bold mb-2">{section.header}</h2>
             <div className="prose max-w-none">
-              {section.content.split("\n").map((paragraph, pIndex) => (
-                <p key={pIndex} className="mb-4">
-                  {paragraph}
-                </p>
-              ))}
+              {renderMarkdown(section.content)}
             </div>
           </div>
         ))}

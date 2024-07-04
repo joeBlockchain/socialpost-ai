@@ -6,6 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/ui/site-header";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "SocialPost-AI",
@@ -75,6 +76,7 @@ export default function RootLayout({
         >
           <SiteHeader />
           <main className="mx-4 md:mx-8 mt-4">{children}</main>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

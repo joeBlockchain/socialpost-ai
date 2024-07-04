@@ -106,14 +106,15 @@ If there is an issue following the instructions, please provide the reason you c
       return NextResponse.json(
         {
           outlineData,
-          errorResponse,
         },
         { status: 200 }
       );
-    } else {
+    } else if (errorResponse) {
       return NextResponse.json(
-        { error: "Failed to generate blog outline" },
-        { status: 500 }
+        {
+          errorResponse,
+        },
+        { status: 200 }
       );
     }
   } catch (error) {
