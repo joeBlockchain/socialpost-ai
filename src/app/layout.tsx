@@ -33,14 +33,6 @@ export const metadata: Metadata = {
       "Create engaging content for multiple platforms with the power of AI",
     url: "https://socialpost-ai.com",
     siteName: "SocialPost-AI",
-    images: [
-      {
-        url: "https://socialpost-ai.com/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "SocialPost-AI Logo",
-      },
-    ],
     locale: "en_US",
     type: "website",
   },
@@ -50,7 +42,6 @@ export const metadata: Metadata = {
     description:
       "Elevate your social media game with AI-generated posts for multiple platforms",
     creator: "@socialpostai",
-    images: ["https://socialpost-ai.com/twitter-image.jpg"],
   },
   viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
