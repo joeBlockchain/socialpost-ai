@@ -9,13 +9,16 @@ import BlogDraft from "./blog-draft";
 import BlogPreview from "./blog-preview";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
+import { SignInButton } from "@clerk/nextjs";
 
 // Add this interface
 interface TargetAudienceData {
@@ -69,6 +72,11 @@ export default function CreateBlogPost() {
     Array<{ header: string; content: string }>
   >([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [alertDialogOpen, setAlertDialogOpen] = useState(false);
+  const [alertDialogContent, setAlertDialogContent] = useState({
+    title: "",
+    description: "",
+  });
 
   const fetchBlogStrategy = async (currentData: TargetAudienceData | null) => {
     const formData = new FormData();
@@ -90,6 +98,7 @@ export default function CreateBlogPost() {
         body: formData,
       });
       if (!res.ok) {
+        handleApiError(res);
         throw new Error("Failed to fetch blog strategy");
       }
 
@@ -139,6 +148,7 @@ export default function CreateBlogPost() {
         body: formData,
       });
       if (!res.ok) {
+        handleApiError(res);
         throw new Error("Failed to fetch core message data");
       }
 
@@ -177,6 +187,7 @@ export default function CreateBlogPost() {
         body: formData,
       });
       if (!res.ok) {
+        handleApiError(res);
         throw new Error("Failed to fetch blog outline");
       }
 
@@ -221,16 +232,17 @@ export default function CreateBlogPost() {
     formData.append("currentSectionIndex", sectionIndex.toString());
 
     try {
-      const response = await fetch("/api/blog-draft-section", {
+      const res = await fetch("/api/blog-draft-section", {
         method: "POST",
         body: formData,
       });
 
-      if (!response.ok) {
+      if (!res.ok) {
+        handleApiError(res);
         throw new Error("Failed to fetch blog section");
       }
 
-      const data = await response.json();
+      const data = await res.json();
 
       const sectionHeader = Object.keys(outlineData)[sectionIndex];
       const newSection = {
@@ -259,8 +271,8 @@ export default function CreateBlogPost() {
           description: data.errorResponse,
         });
       }
-    } catch (error) {
-      console.error("Error fetching blog section:", error);
+    } catch (err) {
+      console.error("Error in fetchBlogDraftSection:", err);
     }
   };
 
@@ -282,6 +294,23 @@ export default function CreateBlogPost() {
   const handleBlogStructureSubmit = (coreMessage: Record<string, string>) => {
     console.log("Core Message:", coreMessage);
     // Store the core message and move to the next step
+  };
+
+  const handleApiError = (error: any) => {
+    console.error("API Error:", error);
+    if (error.status === 401) {
+      setAlertDialogContent({
+        title: "Whoops!",
+        description:
+          "We need to make sure you're a real person and not a sneaky bot. Mind signing in to prove you're not made of circuits?",
+      });
+    } else {
+      setAlertDialogContent({
+        title: "Error",
+        description: error.statusText || "An unexpected error occurred.",
+      });
+    }
+    setAlertDialogOpen(true);
   };
 
   return (
@@ -354,6 +383,21 @@ export default function CreateBlogPost() {
       >
         {showPreview ? "Show Steps" : "Preview Blog"}
       </Button>
+      <AlertDialog open={alertDialogOpen} onOpenChange={setAlertDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertDialogContent.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertDialogContent.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setAlertDialogOpen(false)}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
