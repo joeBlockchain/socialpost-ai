@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 export function SiteHeader() {
   return (
@@ -78,7 +79,17 @@ export function SiteHeader() {
                 </svg>
               </Link>
             </Button>
+
             <ModeToggle />
+
+            <SignedOut>
+              <Button asChild variant="link" className="">
+                <SignInButton />
+              </Button>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </nav>
         </div>
       </div>
