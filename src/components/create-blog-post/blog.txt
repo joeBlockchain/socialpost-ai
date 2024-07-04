@@ -1,0 +1,892 @@
+I want to emphasize how i like building stuff and sharing and posting how i built something.  before ai i was too lazy to write but the ai made it easy to create content i can review.  so i started using ai to write the content.  but typing in the same series of prompts into a chat bot was mind numbing and task intensive so i set about to build a custom interface to replicate the steps i was taking in the chatbot interface from openai and anthropic.
+
+
+creating stuff is a passion, and I also like sharing what I’ve created.
+
+but the process of sharing what I create is way too manual.
+
+I want to leverage an ai workflow for myself
+
+
+
+right now what I do is I write down in my own scribble brain dump typos and all into either a google doe, coda io or medium
+
+then I get to building tracking my progress
+
+well thats not true
+
+first i just used to create stuff and show my friends
+
+my friends commented I should share some of this stuff
+
+so then one day when I created a quick sentiment analysis cloud function in google using a quantized hugging face model 
+
+I created it and hooked it up to a previous project i built
+
+when I fisihed creating it I pasted the code into chatgpt and told the ai I created this function now write a blog about what this is and how i did it
+
+i reviewed the output and fixed it so it didnt sound so robtic and had a bit more of my own “voice” 
+
+then i did another post about detecting for halucinations via the log probs in the api response payload and that time I created the project then I wrote a draft of how i did it then I pasted the draft blog into chatgpt and asked it to make it better
+
+i then fixed it again to have my own voice
+
+so in the first approach i had the ai create the blog without me giving a draft
+
+the second approach i first created the first draft and let the ai take the secdon pass
+
+i liked the second approach a bit better
+
+so for my third post on creating a simple chat app in 24 hours I repeated the approach
+
+but then this is all getting repetititve and im all for doing something a few times or so manually so you can reflect on room for improvement and dont automate too soon 
+
+so now I think i have my rythem down and the prompts I like in what sequence to yeild the best medium post
+
+so now, Im going to attempt to publish socialpost-ai.com as another 1 day build and post the blog where after I create stuff I can provide the ai acces to the reference material like code or what ever i created, the draft process notes of how i did it and then a sequence of prompts i like to use to approve the output or revise and then post on mediaum... time permitting id like to get the twitter post out of this project too although i dont yet know what i like out of the twitter posts but well set that as the stretch goal
+
+
+
+alright, I like nextjs and shadcn ui so lets spin it up and checkit into github... and push to vercel
+
+ready set go
+
+
+
+start with nextjs
+
+npx create-next-app@latest socialpost-ai
+✔ Would you like to use TypeScript? … No / Yes
+✔ Would you like to use ESLint? … No / Yes
+✔ Would you like to use Tailwind CSS? … No / Yes
+✔ Would you like to use `src/` directory? … No / Yes
+✔ Would you like to use App Router? (recommended) … No / Yes
+✔ Would you like to customize the default import alias (@/*)? … No / Yes
+
+install shadcnui
+
+npx shadcn-ui@latest init
+✔ Which style would you like to use? › Default
+✔ Which color would you like to use as base color? › Neutral
+✔ Would you like to use CSS variables for colors? … no / yes
+
+
+
+npm install next-themes
+
+
+
+pnpm install lucide-react
+
+
+
+npm run dev
+
+
+
+follow dark mode install https://ui.shadcn.com/docs/dark-mode/next
+
+and create the site header... tweaking what we had for chatapp-ai  https://github.com/joeBlockchain/chat/blob/main/src/components/main-nav.tsx
+
+and borrowing best practices from shadcnui site-header
+
+https://github.com/shadcn-ui/ui/blob/06cc0cdf3d080555d26abbe6639f2d7f6341ec73/apps/www/components/site-header.tsx#L4
+
+and we get a site header we can work with 
+
+
+import Link from "next/link";
+
+import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
+import { Rabbit } from "lucide-react";
+
+export function SiteHeader() {
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 max-w-screen-2xl items-center">
+        <Link href="/" className="flex mr-6 text-primary" prefetch={false}>
+          <Rabbit className="h-8 w-8" />
+          <span className="ml-4 font-semibold text-lg">SocialPost-AI</span>
+        </Link>
+
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <nav className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="icon" className="h-9 w-9">
+              <Link
+                href="#"
+                prefetch={false}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg
+                  role="img"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="black"
+                  className="dark:fill-white"
+                  width="18"
+                  height="18"
+                >
+                  <title>GitHub</title>
+                  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                </svg>
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="icon" className="h-9 w-9">
+              <Link
+                href="#"
+                prefetch={false}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg
+                  role="img"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="black"
+                  className="dark:fill-white"
+                  width="15"
+                  height="15"
+                >
+                  <title>X</title>
+                  <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                </svg>
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="icon" className="h-9 w-9">
+              <Link
+                href="#"
+                prefetch={false}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg
+                  role="img"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="black"
+                  className="dark:fill-white"
+                  width="22"
+                  height="22"
+                >
+                  <title>Medium</title>
+                  <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z" />
+                </svg>
+              </Link>
+            </Button>
+            <ModeToggle />
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+
+
+
+room for improvement, I like to include links to the forthcoming medium, twitter and github repo  so putting in # and then remembering to go back to the site-header file - leaves room for improvement
+
+nonetheless lets not forget to revisit the links
+
+ok so the set up is done... lets push to github and then publish on vercel!
+
+
+
+now the real fun begins.  now lets think how we want to do this
+
+keeping this to a timed exercise maybe we just make this a simple virticle step process for each step to obtain 
+
+would make the responsive design easier 
+
+ive got designers block... whats nivce about ai tools is they can spur the creativity so lets go to v0 to get some ideas.
+
+but actually im not sure what the prompt should be so lets ask anthropic claude what the prompt should be if we just share our current rough draft blog post 
+
+well that worked I think 
+
+i got this from claude “I'm creating a web application called SocialPost-AI that streamlines the process of creating and sharing blog posts and social media content. The app should allow users to:
+
+1. Input or upload their initial content (e.g., code snippets, project descriptions)
+2. Provide a rough draft or outline of their blog post
+3. Use a series of AI-assisted steps to refine and improve the content
+4. Generate a final blog post suitable for platforms like Medium
+5. Optionally create accompanying social media posts (e.g., for Twitter)
+
+The interface should be simple and intuitive, guiding users through each step of the process. I'm using Next.js and Shadcn UI for development.
+
+Please suggest some ideas for:
+
+1. The overall layout and user flow of the application
+2. Key features or components that would be useful
+3. How to present the AI-assisted editing process
+4. Ways to make the app engaging and user-friendly
+
+Include any thoughts on how to make this tool stand out from other content creation assistants.”
+
+lets see if v0 can create anything...
+
+image.png
+
+I didnt immediatly like anything... so lets just build this out
+
+I ultimately settled on this 
+
+
+
+image.png
+
+
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+export default function CreateBlogPost() {
+  return (
+    <main className="space-y-5">
+      <div className="flex flex-row space-x-4 w-full">
+        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+          <span className="">1</span>
+        </div>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Card Title</CardTitle>
+            <CardDescription>Card Description</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Card Content</p>
+          </CardContent>
+          <CardFooter>
+            <p>Card Footer</p>
+          </CardFooter>
+        </Card>
+      </div>
+      <div className="flex flex-row space-x-4 w-full">
+        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+          <span className="">2</span>
+        </div>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Card Title</CardTitle>
+            <CardDescription>Card Description</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Card Content</p>
+          </CardContent>
+          <CardFooter>
+            <p>Card Footer</p>
+          </CardFooter>
+        </Card>
+      </div>
+      <div className="flex flex-row space-x-4 w-full">
+        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+          <span className="">3</span>
+        </div>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Card Title</CardTitle>
+            <CardDescription>Card Description</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Card Content</p>
+          </CardContent>
+          <CardFooter>
+            <p>Card Footer</p>
+          </CardFooter>
+        </Card>
+      </div>
+    </main>
+  );
+}
+
+
+ just a simple list of cards... so we will now start with step 1.  im just going to ask claude to create the content for step 1 and refactor it a bit spending an hour or so... ultimately we end up with this 
+
+image.png
+
+I swear I could spend all the time in the world thinking of improvements just for a drag and drop file upload... and thats why we make these exercises “timed” - finish in a day and I got many more steps to complete.  so lets check in this code to github.
+
+"use client";
+
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CloudUpload, Trash2, X } from "lucide-react";
+import { FileUp } from "lucide-react"; // Add this import
+
+export default function CreateBlogPost() {
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFiles(Array.from(e.target.files || []));
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFiles(Array.from(e.dataTransfer.files));
+  };
+
+  const handleTableDragOver = (e: React.DragEvent<HTMLUListElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleTableDrop = (e: React.DragEvent<HTMLUListElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newFiles = Array.from(e.dataTransfer.files);
+    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+  };
+
+  return (
+    <main className="space-y-5">
+      <div className="flex flex-row space-x-4 w-full">
+        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+          <span className="">1</span>
+        </div>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Upload Reference Files</CardTitle>
+            <CardDescription>
+              Provide code files, project notes, or other relevant materials for
+              content generation.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {uploadProgress > 0 && (
+              <Progress value={uploadProgress} className="w-full" />
+            )}
+            {files.length === 0 ? (
+              <div
+                className="border-2 border-dashed border-border rounded-lg p-6 text-center"
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
+                <Label htmlFor="file-upload" className="cursor-pointer">
+                  <CloudUpload className="w-6 h-6 mx-auto mb-2" />
+                  <span className="mt-2 block text-sm font-semibold text-muted-foreground">
+                    Drag and drop files here, or click to select files
+                  </span>
+                  <Input
+                    id="file-upload"
+                    name="file-upload"
+                    type="file"
+                    className="sr-only"
+                    onChange={handleFileChange}
+                    multiple
+                  />
+                </Label>
+              </div>
+            ) : (
+              <div className="">
+                <ul
+                  className=""
+                  onDragOver={handleTableDragOver}
+                  onDrop={handleTableDrop}
+                >
+                  <li className="grid grid-cols-12 gap-2 text-sm font-semibold bg-muted/30 p-2 rounded-lg">
+                    <div className="col-span-5">Name</div>
+                    <div className="col-span-2 text-center">Size</div>
+                    <div className="col-span-3 text-center">Preview</div>
+                    <div className="col-span-2 text-center"></div>
+                  </li>
+                  {files.map((file, index) => (
+                    <li
+                      key={index}
+                      className="grid grid-cols-12 items-center px-2"
+                    >
+                      <div className="col-span-5 truncate">{file.name}</div>
+                      <div className="col-span-2 text-center text-xs text-muted-foreground">
+                        {(file.size / 1024).toFixed(2)} KB
+                      </div>
+                      <div className="col-span-3 flex justify-center">
+                        {file.type.startsWith("image/") ? (
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            className="w-8 h-8 object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            No preview
+                          </span>
+                        )}
+                      </div>
+                      <div className="col-span-2 flex justify-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            setFiles(files.filter((_, i) => i !== index))
+                          }
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                  <li className="grid grid-cols-12 items-center px-2 py-4 border-2 border-dashed border-border rounded-lg mt-2">
+                    <div className="col-span-12 text-center text-muted-foreground">
+                      <CloudUpload className="w-6 h-6 mx-auto mb-2" />
+                      <span className="text-sm">
+                        Drag and drop more files here
+                      </span>
+                    </div>
+                  </li>
+                </ul>
+                <div className="flex flex-row space-x-2 items-center px-2 mt-4">
+                  <h4 className="text-sm">Uploaded files:</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {files.length} file{files.length !== 1 ? "s" : ""} provided
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex space-x-2">
+            <Button
+              variant="secondary"
+              onClick={() => console.log("Process files", files)}
+              disabled={files.length === 0}
+            >
+              Process Files
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setFiles([])}
+              disabled={files.length === 0}
+            >
+              Delete All Files
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+      <div className="flex flex-row space-x-4 w-full">
+        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+          <span className="">2</span>
+        </div>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Card Title</CardTitle>
+            <CardDescription>Card Description</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Card Content</p>
+          </CardContent>
+          <CardFooter>
+            <p>Card Footer</p>
+          </CardFooter>
+        </Card>
+      </div>
+      <div className="flex flex-row space-x-4 w-full">
+        <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+          <span className="">3</span>
+        </div>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Card Title</CardTitle>
+            <CardDescription>Card Description</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Card Content</p>
+          </CardContent>
+          <CardFooter>
+            <p>Card Footer</p>
+          </CardFooter>
+        </Card>
+      </div>
+    </main>
+  );
+}
+
+
+for step 2 we are going to review the produced outline.  for now im just going to provide space to review the prompt we are going to use, in case at a future date i feel like revising the prompt for diffferent types of outputs or custom content
+
+image.png
+
+import React, { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+
+interface OutlineProps {
+  onSubmit: (instructions: string) => void;
+}
+
+export default function Outline({ onSubmit }: OutlineProps) {
+  const [instructions, setInstructions] = useState("");
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSubmit(instructions);
+  };
+
+  return (
+    <Card className="w-full">
+      <form onSubmit={handleSubmit}>
+        <CardHeader>
+          <CardTitle>Set Custom Instructions</CardTitle>
+          <CardDescription>
+            Provide instructions for the AI to process your uploaded files.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            placeholder="Enter your instructions here..."
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            className="min-h-[200px]"
+          />
+        </CardContent>
+        <CardFooter>
+          <Button variant="secondary" type="submit">
+            Submit
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+}
+
+
+
+
+at this point its coming together but I’m starting to reflect I wonder if there is a process to createing a blog, so I type into claude this prompt to check my thinking 
+
+“if you need to create a blog about how someone created a quick saas ap and they gave you their journal on how they created it which is their notes and then they gave you the application code, what would be the process”
+
+and i get this repsone 
+
+“To create a blog post about someone's experience developing a quick SaaS app, based on their journal notes and application code, I would follow this process:
+
+1. Review the materials:
+   - Carefully read through the journal notes
+   - Examine the application code
+
+2. Outline the narrative:
+   - Identify key milestones and decision points in the development process
+   - Note any challenges faced and how they were overcome
+   - Highlight interesting technical choices or innovations
+
+3. Structure the blog post:
+   - Introduction: Briefly describe the SaaS app and its purpose
+   - Development timeline: Break down the process into logical stages
+   - Technical deep-dive: Discuss important code snippets or architectural decisions
+   - Lessons learned: Summarize key takeaways from the experience
+   - Conclusion: Reflect on the overall journey and future plans
+
+4. Draft the content:
+   - Write the blog post, balancing technical details with an engaging narrative
+   - Include relevant code snippets to illustrate important points
+   - Use the developer's own words from the journal where appropriate
+
+5. Add visual elements:
+   - Create diagrams or flowcharts to explain complex concepts
+   - Include screenshots of the application if available
+
+6. Edit and refine:
+   - Ensure technical accuracy
+   - Improve readability and flow
+   - Check for consistent tone and style
+
+7. Final review:
+   - Proofread for any errors
+   - Ensure the post accurately represents the developer's experience
+
+Would you like me to elaborate on any specific part of this process?”
+
+I do think this is a decent general outline but I think the 2 biggest considerations are “who is this for”  target audience, and “why would they want to read it or what do they gain by reading it what will they learn”. and “what outcome do we want from the reader”
+
+I also loved the book made to stick so lets see how this process is revised with that feedback
+
+so I’m really liking this response 
+
+“# SaaS Blog Creation Process: Audience-Focused and Sticky
+
+## 1. Define the Target Audience and Goals
+
+- Identify the primary audience (e.g., aspiring SaaS entrepreneurs, junior developers, tech enthusiasts)
+- Determine what the audience hopes to gain (e.g., practical insights, inspiration, technical knowledge)
+- Establish clear goals for the blog post (e.g., inspire action, educate, showcase a unique approach)
+
+## 2. Craft a Compelling Core Message
+
+Apply the SUCCESs principles from "Made to Stick":
+
+- **Simple**: Distill the core message of the SaaS creation journey
+- **Unexpected**: Identify surprising elements or unconventional choices in the process
+- **Concrete**: Focus on tangible steps and real-world examples
+- **Credible**: Highlight the developer's expertise or unique insights
+- **Emotional**: Capture the ups and downs of the development journey
+- **Stories**: Structure the post as a narrative of the developer's experience
+
+## 3. Review and Analyze Materials
+
+- Study the journal notes and application code
+- Identify key elements that align with the core message and audience interests
+
+## 4. Structure the Blog Post
+
+1. **Attention-Grabbing Introduction**
+   - Start with a hook related to the core message
+   - Briefly introduce the SaaS app and its purpose
+
+2. **Developer's Journey**
+   - Narrate the development process, focusing on relatable experiences
+   - Highlight challenges and solutions
+
+3. **Technical Insights**
+   - Share valuable technical details, tailored to the audience's level
+   - Use analogies to explain complex concepts
+
+4. **Lessons Learned**
+   - Emphasize key takeaways applicable to the reader's own projects
+
+5. **Call to Action**
+   - Encourage readers to take a specific next step (e.g., start their own project, try a new technique)
+
+## 5. Create Supporting Content
+
+- Develop diagrams, flowcharts, or infographics to illustrate key points
+- Select and annotate relevant code snippets
+- Consider creating a checklist or resource list for readers
+
+## 6. Write and Refine
+
+- Draft the content, focusing on narrative flow and engagement
+- Edit for clarity, ensuring technical accuracy and readability
+- Incorporate feedback from peers or target audience members if possible
+
+## 7. Optimize for Engagement
+
+- Craft a compelling headline using power words or curiosity gaps
+- Break up text with subheadings, bullet points, and pull quotes
+- Ensure the post is skimmable while still providing depth
+
+## 8. Review and Finalize
+
+- Proofread for errors and consistency
+- Ensure the post delivers on its promise to the target audience
+- Prepare meta description and tags for SEO”
+
+so now we need to chunk this up into agents really, or small tasks the ai can perform as it builds towards a context window
+
+so next step is to ask claude to create each component 1 by 1
+
+ok so now lets hook this up to claude via an api route
+
+i always start with my default nextjs api route code since the ai hallicinate too much on this
+
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+
+    return NextResponse.json(
+      { response: 'All good in the hood' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Error:', error);
+    // Return an error response if an exception occurs
+    return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
+  }
+}
+
+
+but I do like the prompt generator in the anthropic workbench  https://console.anthropic.com/dashboard
+
+
+
+
+
+
+Screenshot 2024-07-02 at 3.19.56 PM.png
+
+
+
+and heres the prompt it gave us to use to take the user files and help create the target audience options for the user to select from 
+
+
+
+You are an AI assistant tasked with helping a user refine their blog post strategy for Medium. Your goal is to analyze the provided content and generate options for target audiences, their potential interests, and the user's goals for sharing the post. Here's how to proceed:
+
+1. First, carefully review the following input:
+
+<reference_files>
+{{REFERENCE_FILES}}
+</reference_files>
+
+<draft_content>
+{{DRAFT_CONTENT}}
+</draft_content>
+
+2. Analyze the content:
+   - Identify the main topics and themes
+   - Note any specific expertise or unique perspectives presented
+   - Consider the tone and style of the writing
+
+3. Generate target audience options:
+   - Based on your analysis, come up with 3-5 potential target audiences for the blog post
+   - Consider demographics, professions, interests, and pain points that align with the content
+
+4. For each target audience option, generate 3-5 reasons why they would be interested in the blog:
+   - Think about how the content relates to their needs, goals, or challenges
+   - Consider what value or insights they might gain from reading the post
+
+5. For each target audience option, generate 3-5 potential goals the user (blog author) might have:
+   - Consider what the user might want to achieve by reaching this specific audience
+   - Think about potential benefits such as building authority, generating leads, or increasing engagement
+
+6. Present your findings in the following format:
+
+<target_audience_options>
+1. [Target Audience 1]
+2. [Target Audience 2]
+3. [Target Audience 3]
+(Include up to 5 options)
+</target_audience_options>
+
+<audience_interest_options>
+1. [Target Audience 1]
+   a. [Reason for interest 1]
+   b. [Reason for interest 2]
+   c. [Reason for interest 3]
+   (Include up to 5 reasons)
+
+2. [Target Audience 2]
+   a. [Reason for interest 1]
+   b. [Reason for interest 2]
+   c. [Reason for interest 3]
+   (Include up to 5 reasons)
+
+(Repeat for each target audience)
+</audience_interest_options>
+
+<user_goals_options>
+1. [Target Audience 1]
+   a. [Potential user goal 1]
+   b. [Potential user goal 2]
+   c. [Potential user goal 3]
+   (Include up to 5 goals)
+
+2. [Target Audience 2]
+   a. [Potential user goal 1]
+   b. [Potential user goal 2]
+   c. [Potential user goal 3]
+   (Include up to 5 goals)
+
+(Repeat for each target audience)
+</user_goals_options>
+
+7. After presenting the options, add a brief conclusion:
+
+<conclusion>
+These options are designed to help you narrow the scope of your blog post and choose a specific target audience, understand their interests, and align your goals accordingly. Consider each option carefully to determine which aligns best with your content and overall blogging strategy on Medium.
+</conclusion>
+
+Remember to be specific and tailor your suggestions to the content provided in the reference files and draft content. Your analysis should help the user refine their blog post strategy and maximize its impact on Medium.
+
+one thing I notice is its always good to ask the ai to provide a reason if it cant comply so I add this at the end 
+
+
+
+
+
+ <error>
+                      if there is an issue following the instructions please provide the reason you cannot comply within the error tag
+                      </error>
+
+
+
+this way we can parse the response for the tags we want and for this error tag to show the user if we get an issue.  so the api worked but for whatever reason the llm is not able to help for some reason like the user didnt send in any files or whatever, its a good catcall
+
+I like to use it with the toaster component from shadcnui 
+
+https://ui.shadcn.com/docs/components/toast
+
+in the client component like this 
+
+
+
+const fetchBlogStrategy = async (currentData: TargetAudienceData | null) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+
+    // Send all previous target audiences, including the current one
+    const allTargetAudiences = currentData
+      ? [...previousTargetAudiences, currentData]
+      : previousTargetAudiences;
+
+    formData.append(
+      "previousTargetAudiences",
+      JSON.stringify(allTargetAudiences)
+    );
+
+    try {
+      const res = await fetch("/api/reader-objective", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch blog strategy");
+      }
+
+      const data = await res.json();
+
+      if (data.jsonResponse) {
+        const parsedResponse: TargetAudienceData = JSON.parse(
+          data.jsonResponse
+        );
+        setTargetAudienceData(parsedResponse);
+
+        // Add the new target audience to the previous ones
+        setPreviousTargetAudiences((prev) => [...prev, parsedResponse]);
+      } else if (data.errorResponse) {
+        console.log("Error in fetchBlogStrategy:");
+        toast({
+          title: "Woops!",
+          description: data.errorResponse,
+        });
+      }
+    } catch (err) {
+      console.error("Error in fetchBlogStrategy:", err);
+    }
+  };
+
+
+
+ok but we need to hook up api routes to all the client component s

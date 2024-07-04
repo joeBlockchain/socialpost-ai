@@ -71,12 +71,14 @@ export default function BlogDraft({
         <CardDescription>Review and edit the blog!</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          <Label>Progress</Label>
-          <Progress value={progress} className="w-full" />
-          <p className="text-sm text-muted-foreground text-right">
-            {Math.round(progress)}% Complete
-          </p>
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center justify-between">
+            <Label>Progress</Label>
+            <p className="text-sm text-muted-foreground text-right">
+              {isNaN(progress) ? 0 : Math.round(progress)}% Complete
+            </p>
+          </div>
+          <Progress value={progress} className="w-full h-2" />
         </div>
         <Accordion
           type="single"
@@ -86,8 +88,10 @@ export default function BlogDraft({
           onValueChange={setOpenAccordionItem}
         >
           {blogSections.map((section, index) => (
-            <AccordionItem value={section.header} key={index} className="">
-              <AccordionTrigger>{section.header}</AccordionTrigger>
+            <AccordionItem value={section.header} key={index}>
+              <AccordionTrigger className="text-left">
+                {section.header}
+              </AccordionTrigger>
               <AccordionContent className="ml-4 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor={`section-description-${index}`} className="">

@@ -93,7 +93,7 @@ export default function BlogOutline({
         >
           {blogSections.map((section, index) => (
             <AccordionItem value={section.header} key={index}>
-              <AccordionTrigger>
+              <AccordionTrigger className="text-left">
                 {sections[section.header]?.header || section.header}
               </AccordionTrigger>
               <AccordionContent className="ml-4 space-y-4">

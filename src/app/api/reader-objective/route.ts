@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
       .map((file) => `File: ${file.name}\n\n${file.content}\n\n`)
       .join("");
 
+    console.log("referenceFilesContent", referenceFilesContent);
+
     let previousAudiencesInstruction = "";
     if (previousTargetAudiences.length > 0) {
       previousAudiencesInstruction = `
@@ -63,7 +65,7 @@ export async function POST(req: NextRequest) {
               type: "text",
               text: `You are an AI assistant tasked with helping a user refine their blog post strategy for Medium. Your goal is to analyze the provided content and generate a focused target audience profile along with reasons for mutual interest. Here's how to proceed:
       
-                    1. First, carefully review the following input:
+                    1. First, carefully review the following input.  Note that the <referance_files> tag is used to indicate the reference files content.  The reference files may include the draft notes the user took to start the blog post, the application code, and any other relevant materials.  
                     
                     <reference_files>
                     ${referenceFilesContent}
@@ -135,6 +137,8 @@ export async function POST(req: NextRequest) {
 
     // Extract the JSON data from Claude's response
     const response = msg.content[0].type === "text" ? msg.content[0].text : "";
+
+    console.log("response", response);
 
     // Extract the jsonResponse and error
     const jsonResponse = response

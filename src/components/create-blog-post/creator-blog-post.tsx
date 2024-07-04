@@ -8,6 +8,14 @@ import BlogOutline from "./blog-outline";
 import BlogDraft from "./blog-draft";
 import BlogPreview from "./blog-preview";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Button } from "../ui/button";
 
 // Add this interface
 interface TargetAudienceData {
@@ -60,6 +68,7 @@ export default function CreateBlogPost() {
   const [blogSections, setBlogSections] = useState<
     Array<{ header: string; content: string }>
   >([]);
+  const [showPreview, setShowPreview] = useState(false);
 
   const fetchBlogStrategy = async (currentData: TargetAudienceData | null) => {
     const formData = new FormData();
@@ -256,13 +265,18 @@ export default function CreateBlogPost() {
   };
 
   const handleBlogDraftSubmit = (draftData: Record<string, string>) => {
-    const newSections = Object.entries(draftData).map(([header, content]) => ({
-      header,
-      content,
-    }));
-    setBlogSections(newSections);
+    // const newSections = Object.entries(draftData).map(([header, content]) => ({
+    //   header,
+    //   content,
+    // }));
+    // setBlogSections(newSections);
+    setShowPreview(true);
     console.log("Blog Draft:", draftData);
     // Move to the next step (e.g., engagement optimization)
+  };
+
+  const togglePreview = () => {
+    setShowPreview(!showPreview);
   };
 
   const handleBlogStructureSubmit = (coreMessage: Record<string, string>) => {
@@ -271,8 +285,12 @@ export default function CreateBlogPost() {
   };
 
   return (
-    <main className="flex flex-row gap-4 pb-10">
-      <div className="flex flex-col space-y-5 w-1/2">
+    <main className="flex flex-col md:flex-row gap-4 pb-10">
+      <div
+        className={`flex flex-col space-y-5 max-w-2xl md:max-w-lg ${
+          showPreview ? "hidden md:flex" : "flex"
+        }`}
+      >
         <div className="flex flex-row space-x-4 w-full">
           <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
             <span className="">1</span>
@@ -323,7 +341,19 @@ export default function CreateBlogPost() {
           />
         </div>
       </div>
-      <BlogPreview blogSections={blogSections} />
+      <div
+        className={`w-full md:min-w-96 ${
+          showPreview ? "block" : "hidden md:block"
+        }`}
+      >
+        <BlogPreview blogSections={blogSections} />
+      </div>
+      <Button
+        onClick={togglePreview}
+        className="md:hidden fixed bottom-4 right-4 "
+      >
+        {showPreview ? "Show Steps" : "Preview Blog"}
+      </Button>
     </main>
   );
 }

@@ -62,6 +62,7 @@ const renderMarkdown = (content: string) => {
 export default function BlogPreview({ blogSections }: BlogPreviewProps) {
   const [copied, setCopied] = useState(false);
   const [displaySections, setDisplaySections] = useState<BlogSection[]>([]);
+  const isEmpty = !displaySections || displaySections.length === 0;
 
   useEffect(() => {
     setDisplaySections(blogSections);
@@ -104,14 +105,23 @@ export default function BlogPreview({ blogSections }: BlogPreviewProps) {
         </Button>
       </CardHeader>
       <CardContent>
-        {displaySections.map((section, index) => (
-          <div key={index} className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">{section.header}</h2>
-            <div className="prose max-w-none">
-              {renderMarkdown(section.content)}
-            </div>
+        {isEmpty ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-2">No content yet</p>
+            <p className="text-sm text-muted-foreground">
+              Need to complete all the steps...
+            </p>
           </div>
-        ))}
+        ) : (
+          displaySections.map((section, index) => (
+            <div key={index} className="mb-6">
+              <h2 className="text-2xl font-bold mb-2">{section.header}</h2>
+              <div className="prose max-w-none">
+                {renderMarkdown(section.content)}
+              </div>
+            </div>
+          ))
+        )}
       </CardContent>
     </Card>
   );
