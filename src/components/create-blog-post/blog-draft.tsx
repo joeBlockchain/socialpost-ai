@@ -39,15 +39,28 @@ export default function BlogDraft({
   blogOutline,
   blogDraft,
 }: BlogDraftProps) {
-  const [sections, setSections] = useState<Record<string, string>>(blogDraft);
+  const [sections, setSections] = useState<Record<string, string>>({});
   const [openAccordionItem, setOpenAccordionItem] = useState<
     string | undefined
   >(blogSections[0]?.header);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    setSections(blogDraft);
-  }, [blogDraft]);
+    // Sync sections with blogOutline and blogDraft
+    const newSections: Record<string, string> = {};
+    blogSections.forEach((section) => {
+      newSections[section.header] = blogDraft[section.header] || "";
+    });
+    setSections(newSections);
+
+    // Update openAccordionItem if the current one no longer exists
+    if (
+      openAccordionItem &&
+      !blogSections.some((s) => s.header === openAccordionItem)
+    ) {
+      setOpenAccordionItem(blogSections[0]?.header);
+    }
+  }, [blogSections, blogOutline, blogDraft, openAccordionItem]);
 
   useEffect(() => {
     // Calculate progress based on the number of non-empty sections
@@ -88,7 +101,7 @@ export default function BlogDraft({
           onValueChange={setOpenAccordionItem}
         >
           {blogSections.map((section, index) => (
-            <AccordionItem value={section.header} key={index}>
+            <AccordionItem value={section.header} key={section.header}>
               <AccordionTrigger className="text-left">
                 {section.header}
               </AccordionTrigger>
@@ -101,9 +114,11 @@ export default function BlogDraft({
                     id={`section-description-${index}`}
                     className="list-disc list-inside ml-2 text-sm text-muted-foreground"
                   >
-                    {section.description.split("\n").map((point, index) => (
-                      <li key={index}>{point.replace(/^- /, "")}</li>
-                    ))}
+                    {section.description
+                      .split("\n")
+                      .map((point, pointIndex) => (
+                        <li key={pointIndex}>{point.replace(/^- /, "")}</li>
+                      ))}
                   </ul>
                 </div>
                 <div className="space-y-2">

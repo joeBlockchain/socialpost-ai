@@ -18,7 +18,7 @@ export function SiteHeader() {
           <nav className="flex items-center gap-2">
             <Button asChild variant="ghost" size="icon" className="h-9 w-9">
               <Link
-                href="#"
+                href="https://github.com/joeBlockchain/socialpost-ai"
                 prefetch={false}
                 target="_blank"
                 rel="noopener noreferrer"

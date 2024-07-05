@@ -91,6 +91,7 @@ export default function CreateBlogPost() {
       "previousTargetAudiences",
       JSON.stringify(allTargetAudiences)
     );
+    showFetchStartToast("Fetching blog strategy...");
 
     try {
       const res = await fetch("/api/reader-objective", {
@@ -112,6 +113,7 @@ export default function CreateBlogPost() {
 
         // Add the new target audience to the previous ones
         setPreviousTargetAudiences((prev) => [...prev, parsedResponse]);
+        showFetchEndToast("Blog strategy fetched successfully!");
       } else if (data.errorResponse) {
         console.log("Error in fetchBlogStrategy:");
         toast({
@@ -121,6 +123,7 @@ export default function CreateBlogPost() {
       }
     } catch (err) {
       console.error("Error in fetchBlogStrategy:", err);
+      showFetchEndToast("Error fetching blog strategy");
     }
   };
 
@@ -142,6 +145,7 @@ export default function CreateBlogPost() {
     files.forEach((file) => formData.append("files", file));
     formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
 
+    showFetchStartToast("Fetching core message...");
     try {
       const res = await fetch("/api/core-message", {
         method: "POST",
@@ -154,9 +158,7 @@ export default function CreateBlogPost() {
 
       const data = await res.json();
       setCoreMessageData(data.coreMessageData);
-
-      console.log("Core message data:", data);
-
+      showFetchEndToast("Core message fetched successfully!");
       if (data.errorResponse) {
         toast({
           title: "Woops!",
@@ -165,6 +167,7 @@ export default function CreateBlogPost() {
       }
     } catch (err) {
       console.error("Error in fetchCoreMessageData:", err);
+      showFetchEndToast("Error fetching core message");
     }
   };
 
@@ -181,6 +184,7 @@ export default function CreateBlogPost() {
     formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
     formData.append("coreMessageData", JSON.stringify(coreMessage));
 
+    showFetchStartToast("Fetching blog outline...");
     try {
       const res = await fetch("/api/blog-outline", {
         method: "POST",
@@ -193,10 +197,9 @@ export default function CreateBlogPost() {
 
       const data = await res.json();
 
-      console.log("Blog outline data:", data);
-
       if (data) {
         setBlogOutlineData(data.outlineData.blogSections);
+        showFetchEndToast("Blog outline fetched successfully!");
       }
 
       if (data.errorResponse) {
@@ -207,6 +210,7 @@ export default function CreateBlogPost() {
       }
     } catch (err) {
       console.error("Error in fetchBlogOutline:", err);
+      showFetchEndToast("Error fetching blog outline");
     }
   };
 
@@ -230,7 +234,10 @@ export default function CreateBlogPost() {
     formData.append("blogOutline", JSON.stringify(outlineData));
     formData.append("completedSections", JSON.stringify({})); // Initially empty
     formData.append("currentSectionIndex", sectionIndex.toString());
+    const totalSections = Object.keys(outlineData).length;
+    const currentSection = sectionIndex + 1;
 
+    showFetchStartToast("Fetching blog draft section...");
     try {
       const res = await fetch("/api/blog-draft-section", {
         method: "POST",
@@ -258,10 +265,15 @@ export default function CreateBlogPost() {
 
       // Update blogSections state for real-time preview
       setBlogSections((prev) => [...prev, newSection]);
+      showFetchEndToast(
+        `Blog section ${currentSection} of ${totalSections} fetched successfully!`
+      );
 
       // If there are more sections, fetch the next one
       if (sectionIndex < Object.keys(outlineData).length - 1) {
         await fetchBlogDraftSection(sectionIndex + 1, outlineData);
+      } else {
+        showFetchEndToast("All blog draft sections fetched successfully!");
       }
 
       if (data.errorResponse) {
@@ -273,6 +285,9 @@ export default function CreateBlogPost() {
       }
     } catch (err) {
       console.error("Error in fetchBlogDraftSection:", err);
+      showFetchEndToast(
+        `Failed to fetch blog draft section ${sectionIndex + 1}.`
+      );
     }
   };
 
@@ -311,6 +326,20 @@ export default function CreateBlogPost() {
       });
     }
     setAlertDialogOpen(true);
+  };
+
+  const showFetchStartToast = (message: string) => {
+    toast({
+      title: "Fetching Data",
+      description: message,
+    });
+  };
+
+  const showFetchEndToast = (message: string) => {
+    toast({
+      title: "Fetch Complete",
+      description: message,
+    });
   };
 
   return (

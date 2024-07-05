@@ -15,8 +15,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ArrowRight } from "lucide-react";
-import { Input } from "@/components/ui/input"; // Import Input component
+import { ArrowRight, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
 
 interface BlogSection {
@@ -34,20 +34,20 @@ export default function BlogOutline({
   blogSections,
 }: BlogOutlineProps) {
   const [sections, setSections] = useState<Record<string, BlogSection>>({});
-
+  const [sectionOrder, setSectionOrder] = useState<string[]>([]);
   const [openAccordionItem, setOpenAccordionItem] = useState<
     string | undefined
   >(blogSections[0]?.header);
 
   useEffect(() => {
-    setSections(
-      Object.fromEntries(
-        blogSections.map((s) => [
-          s.header,
-          { header: s.header, description: s.description },
-        ])
-      )
+    const initialSections = Object.fromEntries(
+      blogSections.map((s) => [
+        s.header,
+        { header: s.header, description: s.description },
+      ])
     );
+    setSections(initialSections);
+    setSectionOrder(blogSections.map((s) => s.header));
   }, [blogSections]);
 
   const handleSectionChange = (
@@ -62,15 +62,66 @@ export default function BlogOutline({
   };
 
   const handleSubmit = () => {
-    onSubmit(sections);
+    const orderedSections = sectionOrder.reduce((acc, header) => {
+      acc[header] = sections[header];
+      return acc;
+    }, {} as Record<string, BlogSection>);
+    onSubmit(orderedSections);
   };
 
   const handleNextAccordionItem = () => {
-    const currentIndex = blogSections.findIndex(
-      (s) => s.header === openAccordionItem
+    const currentIndex = sectionOrder.findIndex(
+      (header) => header === openAccordionItem
     );
-    if (currentIndex < blogSections.length - 1) {
-      setOpenAccordionItem(blogSections[currentIndex + 1].header);
+    if (currentIndex < sectionOrder.length - 1) {
+      setOpenAccordionItem(sectionOrder[currentIndex + 1]);
+    }
+  };
+
+  const addNewSection = () => {
+    let newSectionNumber = 1;
+    let newSectionHeader = `New Section ${newSectionNumber}`;
+
+    while (sections.hasOwnProperty(newSectionHeader)) {
+      newSectionNumber++;
+      newSectionHeader = `New Section ${newSectionNumber}`;
+    }
+
+    setSections((prev) => ({
+      ...prev,
+      [newSectionHeader]: { header: newSectionHeader, description: "" },
+    }));
+    setSectionOrder((prev) => [...prev, newSectionHeader]);
+    setOpenAccordionItem(newSectionHeader);
+  };
+
+  const deleteSection = (headerToDelete: string) => {
+    setSections((prev) => {
+      const { [headerToDelete]: deleted, ...rest } = prev;
+      return rest;
+    });
+    setSectionOrder((prev) =>
+      prev.filter((header) => header !== headerToDelete)
+    );
+
+    if (openAccordionItem === headerToDelete) {
+      setOpenAccordionItem(undefined);
+    }
+  };
+
+  const moveSection = (header: string, direction: "up" | "down") => {
+    const currentIndex = sectionOrder.indexOf(header);
+    if (
+      (direction === "up" && currentIndex > 0) ||
+      (direction === "down" && currentIndex < sectionOrder.length - 1)
+    ) {
+      const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+      const newOrder = [...sectionOrder];
+      [newOrder[currentIndex], newOrder[newIndex]] = [
+        newOrder[newIndex],
+        newOrder[currentIndex],
+      ];
+      setSectionOrder(newOrder);
     }
   };
 
@@ -91,10 +142,10 @@ export default function BlogOutline({
           value={openAccordionItem}
           onValueChange={setOpenAccordionItem}
         >
-          {blogSections.map((section, index) => (
-            <AccordionItem value={section.header} key={index}>
+          {sectionOrder.map((header, index) => (
+            <AccordionItem value={header} key={index}>
               <AccordionTrigger className="text-left">
-                {sections[section.header]?.header || section.header}
+                {sections[header].header}
               </AccordionTrigger>
               <AccordionContent className="ml-4 space-y-4">
                 <div className="space-y-2">
@@ -103,13 +154,9 @@ export default function BlogOutline({
                   </Label>
                   <Input
                     id={`header-${index}`}
-                    value={sections[section.header]?.header || ""}
+                    value={sections[header].header}
                     onChange={(e) =>
-                      handleSectionChange(
-                        section.header,
-                        "header",
-                        e.target.value
-                      )
+                      handleSectionChange(header, "header", e.target.value)
                     }
                     className=""
                   />
@@ -120,31 +167,59 @@ export default function BlogOutline({
                   </Label>
                   <Textarea
                     id={`description-${index}`}
-                    value={sections[section.header]?.description || ""}
+                    value={sections[header].description}
                     onChange={(e) =>
-                      handleSectionChange(
-                        section.header,
-                        "description",
-                        e.target.value
-                      )
+                      handleSectionChange(header, "description", e.target.value)
                     }
                     className="min-h-[150px]"
                   />
                 </div>
-                {index < blogSections.length - 1 && (
+                <div className="flex justify-between items-end">
+                  <div className="space-y-2">
+                    <Label className="">Adjust Order</Label>
+                    <div className="flex space-x-2 p-1 border border-border rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => moveSection(header, "up")}
+                          disabled={index === 0}
+                        >
+                          <ArrowUp className="w-4 h-4" />
+                        </Button>
+                        <div className="border-l border-border h-8"></div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => moveSection(header, "down")}
+                          disabled={index === sectionOrder.length - 1}
+                        >
+                          <ArrowDown className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                   <Button
-                    variant="secondary"
-                    onClick={handleNextAccordionItem}
-                    className="mt-4"
+                    variant="destructive"
+                    onClick={() => deleteSection(header)}
+                    className=""
                   >
-                    Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    Delete
+                    <Trash2 className="w-4 h-4 ml-2" />
                   </Button>
-                )}
+                </div>
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
+        <Button
+          variant="outline"
+          onClick={addNewSection}
+          className="mt-4 w-full"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add New Section
+        </Button>
       </CardContent>
       <CardFooter className="flex justify-end">
         <Button variant="secondary" onClick={handleSubmit} className="">
