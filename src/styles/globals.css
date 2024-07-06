@@ -88,8 +88,12 @@
   position: absolute;
   inset: 0px;
   border-radius: 50%;
-  border: var(--loader-border-width, 2px) solid var(--loader-color, #fff);
+  border: var(--loader-border-width, 2px) solid var(--loader-color, #000);
   animation: prixClipFix 2s linear infinite;
+}
+
+.dark .loader::before {
+  border-color: var(--loader-color-dark, #fff);
 }
 
 .loader-small {

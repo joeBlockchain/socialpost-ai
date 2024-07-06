@@ -24,6 +24,11 @@ export async function POST(req: NextRequest) {
     const previousTargetAudiences = JSON.parse(
       (formData.get("previousTargetAudiences") as string) || "[]"
     );
+    const selectedBlogIdea = formData.get("selectedBlogIdea") as string;
+    const contentDescription = formData.get("contentDescription") as string;
+
+    console.log("selectedBlogIdea", selectedBlogIdea);
+    console.log("contentDescription", contentDescription);
 
     // Process files and extract their content
     const fileContents = await Promise.all(
@@ -70,6 +75,18 @@ export async function POST(req: NextRequest) {
                     <reference_files>
                     ${referenceFilesContent}
                     </reference_files>
+
+                    also note that the <content_description> tag is used to indicate the content description provided by the user.  
+
+                    <content_description>
+                    ${contentDescription}
+                    </content_description>
+
+                    also note that the <blog_idea> tag is used to indicate the blog idea provided by the user.  
+
+                    <blog_idea>
+                    ${selectedBlogIdea}
+                    </blog_idea>
                     
                     ${previousAudiencesInstruction}
                     

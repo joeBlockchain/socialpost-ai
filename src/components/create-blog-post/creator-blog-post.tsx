@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ProvideRefContent from "./provide-ref-content";
+import ContentAnalyzer from "./content-analyzer";
 import ReaderObjectiveAnalyzer from "./reader-objective-analyzer";
 import CoreMessageCrafter from "./core-message-crafter";
 import BlogOutline from "./blog-outline";
@@ -18,7 +19,6 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
-import { SignInButton } from "@clerk/nextjs";
 
 // Add this interface
 interface TargetAudienceData {
@@ -78,7 +78,67 @@ export default function CreateBlogPost() {
     description: "",
   });
 
-  const fetchBlogStrategy = async (currentData: TargetAudienceData | null) => {
+  const [contentAnalysis, setContentAnalysis] = useState<{
+    contentDescription: string;
+    selectedBlogIdea: string;
+  } | null>(null);
+  const [contentDescription, setContentDescription] = useState("");
+  const [blogIdeas, setBlogIdeas] = useState<string[]>([]);
+  const [selectedBlogIdea, setSelectedBlogIdea] = useState("");
+
+  const handleContentAnalysis = async () => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+
+    showFetchStartToast("Fetching content analysis...");
+    try {
+      const response = await fetch("/api/content-analysis", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        handleApiError(response);
+        throw new Error("Failed to fetch content analysis");
+      }
+
+      const data = await response.json();
+      if (data.jsonResponse) {
+        const parsedResponse = JSON.parse(data.jsonResponse);
+        setContentDescription(parsedResponse.contentDescription);
+        setBlogIdeas(parsedResponse.blogIdeas);
+        setSelectedBlogIdea(parsedResponse.blogIdeas[0] || "");
+        showFetchEndToast("Content analysis fetched successfully!");
+        return parsedResponse;
+      } else if (data.errorResponse) {
+        console.log("Error in fetchContentAnalysis:", data.errorResponse);
+        toast({
+          title: "Woops!",
+          description: data.errorResponse,
+        });
+      }
+    } catch (error) {
+      console.error("Error in handleContentAnalysis:", error);
+      showFetchEndToast("Error fetching content analysis");
+    }
+  };
+
+  const handleContentAnalyzerSubmit = async (
+    contentDescription: string,
+    selectedBlogIdea: string
+  ) => {
+    setContentAnalysis({ contentDescription, selectedBlogIdea });
+    setContentDescription(contentDescription);
+    setSelectedBlogIdea(selectedBlogIdea);
+    // You can add logic here to move to the next step or update other states
+    await fetchBlogStrategy(null, selectedBlogIdea, contentDescription);
+  };
+
+  const fetchBlogStrategy = async (
+    currentData: TargetAudienceData | null,
+    selectedBlogIdea: string,
+    contentDescription: string
+  ) => {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
 
@@ -91,6 +151,8 @@ export default function CreateBlogPost() {
       "previousTargetAudiences",
       JSON.stringify(allTargetAudiences)
     );
+    formData.append("selectedBlogIdea", selectedBlogIdea);
+    formData.append("contentDescription", contentDescription);
     showFetchStartToast("Fetching blog strategy...");
 
     try {
@@ -128,7 +190,7 @@ export default function CreateBlogPost() {
   };
 
   const handleSubmitRefContent = async () => {
-    await fetchBlogStrategy(null);
+    await handleContentAnalysis();
   };
 
   const handleReaderObjectiveAnalyzerSubmit = async (
@@ -363,15 +425,31 @@ export default function CreateBlogPost() {
           <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
             <span className="">2</span>
           </div>
-          <ReaderObjectiveAnalyzer
-            onSubmit={handleReaderObjectiveAnalyzerSubmit}
-            targetAudienceData={targetAudienceData}
-            fetchBlogStrategy={fetchBlogStrategy}
+          <ContentAnalyzer
+            onSubmit={handleContentAnalyzerSubmit}
+            onAnalyze={handleContentAnalysis}
+            contentDescription={contentDescription}
+            setContentDescription={setContentDescription}
+            blogIdeas={blogIdeas}
+            selectedBlogIdea={selectedBlogIdea}
+            setSelectedBlogIdea={setSelectedBlogIdea}
           />
         </div>
         <div className="flex flex-row space-x-4 w-full">
           <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
             <span className="">3</span>
+          </div>
+          <ReaderObjectiveAnalyzer
+            onSubmit={handleReaderObjectiveAnalyzerSubmit}
+            targetAudienceData={targetAudienceData}
+            fetchBlogStrategy={fetchBlogStrategy}
+            selectedBlogIdea={selectedBlogIdea}
+            contentDescription={contentDescription}
+          />
+        </div>
+        <div className="flex flex-row space-x-4 w-full">
+          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+            <span className="">4</span>
           </div>
           <CoreMessageCrafter
             onSubmit={handleCoreMessageSubmit}
@@ -380,7 +458,7 @@ export default function CreateBlogPost() {
         </div>
         <div className="flex flex-row space-x-4 w-full">
           <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-            <span className="">4</span>
+            <span className="">5</span>
           </div>
           <BlogOutline
             onSubmit={handleBlogOutlineSubmit}
@@ -389,7 +467,7 @@ export default function CreateBlogPost() {
         </div>
         <div className="flex flex-row space-x-4 w-full">
           <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-            <span className="">5</span>
+            <span className="">6</span>
           </div>
           <BlogDraft
             onSubmit={handleBlogDraftSubmit}

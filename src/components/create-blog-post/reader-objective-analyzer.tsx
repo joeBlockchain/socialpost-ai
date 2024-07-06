@@ -104,13 +104,21 @@ interface ReaderObjectiveAnalyzerProps {
     blogGoals: string;
   }) => void;
   targetAudienceData: TargetAudienceData | null;
-  fetchBlogStrategy: (currentData: TargetAudienceData | null) => Promise<void>;
+  fetchBlogStrategy: (
+    currentData: TargetAudienceData | null,
+    selectedBlogIdea: string,
+    contentDescription: string
+  ) => Promise<void>;
+  selectedBlogIdea: string;
+  contentDescription: string;
 }
 
 export default function ReaderObjectiveAnalyzer({
   onSubmit,
   targetAudienceData,
   fetchBlogStrategy,
+  selectedBlogIdea,
+  contentDescription,
 }: ReaderObjectiveAnalyzerProps) {
   const [selectedTargetAudience, setSelectedTargetAudience] =
     useState("custom");
@@ -159,7 +167,7 @@ export default function ReaderObjectiveAnalyzer({
   };
 
   const handleNewAISuggestions = () => {
-    fetchBlogStrategy(targetAudienceData);
+    fetchBlogStrategy(targetAudienceData, selectedBlogIdea, contentDescription);
   };
 
   const targetAudienceOptions: Option[] = targetAudienceData
