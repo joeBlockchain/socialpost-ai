@@ -20,7 +20,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
 
-// Add this interface
+interface BlogIdea {
+  title: string;
+  coreMessage: string;
+}
+
 interface TargetAudienceData {
   targetAudience: {
     name: string;
@@ -83,8 +87,10 @@ export default function CreateBlogPost() {
     selectedBlogIdea: string;
   } | null>(null);
   const [contentDescription, setContentDescription] = useState("");
-  const [blogIdeas, setBlogIdeas] = useState<string[]>([]);
-  const [selectedBlogIdea, setSelectedBlogIdea] = useState("");
+  const [blogIdeas, setBlogIdeas] = useState<BlogIdea[]>([]);
+  const [selectedBlogIdea, setSelectedBlogIdea] = useState<BlogIdea | null>(
+    null
+  );
 
   const handleContentAnalysis = async () => {
     const formData = new FormData();
@@ -107,7 +113,7 @@ export default function CreateBlogPost() {
         const parsedResponse = JSON.parse(data.jsonResponse);
         setContentDescription(parsedResponse.contentDescription);
         setBlogIdeas(parsedResponse.blogIdeas);
-        setSelectedBlogIdea(parsedResponse.blogIdeas[0] || "");
+        setSelectedBlogIdea(parsedResponse.blogIdeas[0] || null);
         showFetchEndToast("Content analysis fetched successfully!");
         return parsedResponse;
       } else if (data.errorResponse) {
@@ -125,9 +131,8 @@ export default function CreateBlogPost() {
 
   const handleContentAnalyzerSubmit = async (
     contentDescription: string,
-    selectedBlogIdea: string
+    selectedBlogIdea: BlogIdea
   ) => {
-    setContentAnalysis({ contentDescription, selectedBlogIdea });
     setContentDescription(contentDescription);
     setSelectedBlogIdea(selectedBlogIdea);
     // You can add logic here to move to the next step or update other states
@@ -136,7 +141,7 @@ export default function CreateBlogPost() {
 
   const fetchBlogStrategy = async (
     currentData: TargetAudienceData | null,
-    selectedBlogIdea: string,
+    selectedBlogIdea: BlogIdea,
     contentDescription: string
   ) => {
     const formData = new FormData();
@@ -151,7 +156,7 @@ export default function CreateBlogPost() {
       "previousTargetAudiences",
       JSON.stringify(allTargetAudiences)
     );
-    formData.append("selectedBlogIdea", selectedBlogIdea);
+    formData.append("selectedBlogIdea", JSON.stringify(selectedBlogIdea));
     formData.append("contentDescription", contentDescription);
     showFetchStartToast("Fetching blog strategy...");
 

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import {
   Card,
@@ -18,6 +20,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
+interface BlogIdea {
+  title: string;
+  coreMessage: string;
+}
 
 interface Option {
   value: string;
@@ -106,10 +113,10 @@ interface ReaderObjectiveAnalyzerProps {
   targetAudienceData: TargetAudienceData | null;
   fetchBlogStrategy: (
     currentData: TargetAudienceData | null,
-    selectedBlogIdea: string,
+    selectedBlogIdea: BlogIdea,
     contentDescription: string
   ) => Promise<void>;
-  selectedBlogIdea: string;
+  selectedBlogIdea: BlogIdea | null;
   contentDescription: string;
 }
 
@@ -130,6 +137,7 @@ export default function ReaderObjectiveAnalyzer({
   const [openAccordionItem, setOpenAccordionItem] = useState<
     string | undefined
   >("target-audience");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (targetAudienceData) {
@@ -166,8 +174,19 @@ export default function ReaderObjectiveAnalyzer({
     }
   };
 
-  const handleNewAISuggestions = () => {
-    fetchBlogStrategy(targetAudienceData, selectedBlogIdea, contentDescription);
+  const handleNewAISuggestions = async () => {
+    if (selectedBlogIdea) {
+      setIsLoading(true); // Add this line
+      try {
+        await fetchBlogStrategy(
+          targetAudienceData,
+          selectedBlogIdea,
+          contentDescription
+        );
+      } finally {
+        setIsLoading(false); // Add this line
+      }
+    }
   };
 
   const targetAudienceOptions: Option[] = targetAudienceData
@@ -206,11 +225,27 @@ export default function ReaderObjectiveAnalyzer({
         </div>
         <Button
           variant="outline"
-          size="icon"
           onClick={handleNewAISuggestions}
+          disabled={isLoading}
           className="ml-4"
         >
-          <RotateCcw className="w-4 h-4" />
+          {isLoading ? (
+            <span
+              className="loader"
+              style={
+                {
+                  "--loader-size": "18px",
+                  "--loader-color": "#000",
+                  "--loader-color-dark": "#fff",
+                } as React.CSSProperties
+              }
+            ></span>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <RotateCcw className="w-4 h-4" />
+              <span className="">AI Retry</span>
+            </div>
+          )}
         </Button>
       </CardHeader>
       <CardContent>

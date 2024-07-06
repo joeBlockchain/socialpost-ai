@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
+interface BlogIdea {
+  title: string;
+  coreMessage: string;
+}
+
 interface TargetAudienceData {
   targetAudience: {
     name: string;
@@ -17,18 +22,16 @@ interface TargetAudienceData {
 }
 
 export async function POST(req: NextRequest) {
-  console.log("calling POST /api/reader-objective");
   try {
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
     const previousTargetAudiences = JSON.parse(
-      (formData.get("previousTargetAudiences") as string) || "[]"
+      formData.get("previousTargetAudiences") as string
     );
-    const selectedBlogIdea = formData.get("selectedBlogIdea") as string;
+    const selectedBlogIdea: BlogIdea = JSON.parse(
+      formData.get("selectedBlogIdea") as string
+    );
     const contentDescription = formData.get("contentDescription") as string;
-
-    console.log("selectedBlogIdea", selectedBlogIdea);
-    console.log("contentDescription", contentDescription);
 
     // Process files and extract their content
     const fileContents = await Promise.all(
@@ -45,8 +48,6 @@ export async function POST(req: NextRequest) {
     const referenceFilesContent = fileContents
       .map((file) => `File: ${file.name}\n\n${file.content}\n\n`)
       .join("");
-
-    console.log("referenceFilesContent", referenceFilesContent);
 
     let previousAudiencesInstruction = "";
     if (previousTargetAudiences.length > 0) {
@@ -85,8 +86,13 @@ export async function POST(req: NextRequest) {
                     also note that the <blog_idea> tag is used to indicate the blog idea provided by the user.  
 
                     <blog_idea>
-                    ${selectedBlogIdea}
+                    ${selectedBlogIdea.title}
                     </blog_idea>
+
+                    <blog_idea_core_message>
+                    ${selectedBlogIdea.coreMessage}
+                    </blog_idea_core_message>
+
                     
                     ${previousAudiencesInstruction}
                     

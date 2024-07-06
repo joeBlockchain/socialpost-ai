@@ -47,11 +47,26 @@ export async function POST(req: NextRequest) {
               {
                 "contentDescription": "Your concise description here",
                 "blogIdeas": [
-                  "First blog idea",
-                  "Second blog idea",
-                  "Third blog idea",
-                  "Fourth blog idea",
-                  "Fifth blog idea"
+                  {
+                    "title": "First blog post title",
+                    "coreMessage": "Core message for the first blog post"
+                  },
+                  {
+                    "title": "Second blog post title",
+                    "coreMessage": "Core message for the second blog post"
+                  },
+                  {
+                    "title": "Third blog post title",
+                    "coreMessage": "Core message for the third blog post"
+                  },
+                  {
+                    "title": "Fourth blog post title",
+                    "coreMessage": "Core message for the fourth blog post"
+                  },
+                  {
+                    "title": "Fifth blog post title",
+                    "coreMessage": "Core message for the fifth blog post"
+                  }
                 ]
               }
               </jsonResponse>
