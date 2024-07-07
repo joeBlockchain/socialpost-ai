@@ -5,7 +5,7 @@ export const maxDuration = 60;
 
 interface BlogIdea {
   title: string;
-  coreMessage: string;
+  description: string;
 }
 
 interface TargetAudienceData {
@@ -91,9 +91,9 @@ export async function POST(req: NextRequest) {
                     ${selectedBlogIdea.title}
                     </blog_idea>
 
-                    <blog_idea_core_message>
-                    ${selectedBlogIdea.coreMessage}
-                    </blog_idea_core_message>
+                    <blog_idea_description>
+                    ${selectedBlogIdea.description}
+                    </blog_idea_description>
 
                     
                     ${previousAudiencesInstruction}

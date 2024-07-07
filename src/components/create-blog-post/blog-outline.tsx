@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import {
   Card,
@@ -15,7 +17,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ArrowRight, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  ArrowRight,
+  Plus,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  RotateCcw,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
 
@@ -26,13 +35,16 @@ interface BlogSection {
 
 interface BlogOutlineProps {
   onSubmit: (data: Record<string, BlogSection>) => void;
+  onRequery: () => void;
   blogSections: BlogSection[];
 }
 
 export default function BlogOutline({
   onSubmit,
+  onRequery,
   blogSections,
 }: BlogOutlineProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const [sections, setSections] = useState<Record<string, BlogSection>>({});
   const [sectionOrder, setSectionOrder] = useState<string[]>([]);
   const [openAccordionItem, setOpenAccordionItem] = useState<
@@ -125,14 +137,51 @@ export default function BlogOutline({
     }
   };
 
+  const handleRequery = async () => {
+    setIsLoading(true);
+    try {
+      await onRequery();
+    } catch (error) {
+      console.error("Error re-drafting content:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>The Blog Outline</CardTitle>
-        <CardDescription>
-          Outline your blog post using the following structure. Each section
-          helps to create a compelling and well-organized narrative.
-        </CardDescription>
+      <CardHeader className="flex flex-row justify-between">
+        <div>
+          <CardTitle>The Blog Outline</CardTitle>
+          <CardDescription>
+            Outline your blog post using the following structure. Each section
+            helps to create a compelling and well-organized narrative.
+          </CardDescription>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleRequery}
+          disabled={isLoading}
+          className="ml-4"
+        >
+          {isLoading ? (
+            <span
+              className="loader"
+              style={
+                {
+                  "--loader-size": "18px",
+                  "--loader-color": "#000",
+                  "--loader-color-dark": "#fff",
+                } as React.CSSProperties
+              }
+            ></span>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <RotateCcw className="w-4 h-4" />
+              <span className="">AI Retry</span>
+            </div>
+          )}
+        </Button>
       </CardHeader>
       <CardContent>
         <Accordion

@@ -4,7 +4,6 @@ import { useState } from "react";
 import ProvideRefContent from "./provide-ref-content";
 import ContentAnalyzer from "./content-analyzer";
 import ReaderObjectiveAnalyzer from "./reader-objective-analyzer";
-import CoreMessageCrafter from "./core-message-crafter";
 import BlogOutline from "./blog-outline";
 import BlogDraft from "./blog-draft";
 import BlogPreview from "./blog-preview";
@@ -61,10 +60,6 @@ export default function CreateBlogPost() {
   >([]);
   const [readerObjectiveData, setReaderObjectiveData] =
     useState<ReaderObjectiveData | null>(null);
-  const [coreMessageData, setCoreMessageData] = useState<Record<
-    string,
-    string
-  > | null>(null);
   const [blogOutlineData, setBlogOutlineData] = useState<BlogSection[] | null>(
     null
   );
@@ -202,56 +197,15 @@ export default function CreateBlogPost() {
     data: ReaderObjectiveData
   ) => {
     setReaderObjectiveData(data);
-    await fetchCoreMessageData(data);
+    await fetchBlogOutline();
   };
 
-  const fetchCoreMessageData = async (
-    readerObjectiveData: ReaderObjectiveData
-  ) => {
+  const fetchBlogOutline = async () => {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
-    formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
     formData.append("contentDescription", contentDescription);
     formData.append("selectedBlogIdea", JSON.stringify(selectedBlogIdea));
-
-    showFetchStartToast("Fetching core message...");
-    try {
-      const res = await fetch("/api/core-message", {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) {
-        handleApiError(res);
-        throw new Error("Failed to fetch core message data");
-      }
-
-      const data = await res.json();
-      setCoreMessageData(data.coreMessageData);
-      showFetchEndToast("Core message fetched successfully!");
-      if (data.errorResponse) {
-        toast({
-          title: "Woops!",
-          description: data.errorResponse,
-        });
-      }
-    } catch (err) {
-      console.error("Error in fetchCoreMessageData:", err);
-      showFetchEndToast("Error fetching core message");
-    }
-  };
-
-  const handleCoreMessageSubmit = async (
-    coreMessage: Record<string, string>
-  ) => {
-    setCoreMessageData(coreMessage);
-    await fetchBlogOutline(coreMessage);
-  };
-
-  const fetchBlogOutline = async (coreMessage: Record<string, string>) => {
-    const formData = new FormData();
-    files.forEach((file) => formData.append("files", file));
     formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
-    formData.append("coreMessageData", JSON.stringify(coreMessage));
 
     showFetchStartToast("Fetching blog outline...");
     try {
@@ -294,19 +248,20 @@ export default function CreateBlogPost() {
 
   const fetchBlogDraftSection = async (
     sectionIndex: number,
-    outlineData: Record<string, BlogSection>
+    outlineData: Record<string, BlogSection>,
+    singleSection: boolean = false
   ) => {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
     formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
-    formData.append("coreMessageData", JSON.stringify(coreMessageData));
+
     formData.append("blogOutline", JSON.stringify(outlineData));
-    formData.append("completedSections", JSON.stringify({})); // Initially empty
+    formData.append("completedSections", JSON.stringify(blogDraft));
     formData.append("currentSectionIndex", sectionIndex.toString());
     const totalSections = Object.keys(outlineData).length;
     const currentSection = sectionIndex + 1;
 
-    showFetchStartToast("Fetching blog draft section...");
+    showFetchStartToast(`Fetching blog draft section ${currentSection}...`);
     try {
       const res = await fetch("/api/blog-draft-section", {
         method: "POST",
@@ -333,14 +288,31 @@ export default function CreateBlogPost() {
       }));
 
       // Update blogSections state for real-time preview
-      setBlogSections((prev) => [...prev, newSection]);
+      setBlogSections((prev) => {
+        const newSections = [...prev];
+        const existingIndex = newSections.findIndex(
+          (s) => s.header === sectionHeader
+        );
+        if (existingIndex !== -1) {
+          newSections[existingIndex] = newSection;
+        } else {
+          newSections.push(newSection);
+        }
+        return newSections;
+      });
+
       showFetchEndToast(
         `Blog section ${currentSection} of ${totalSections} fetched successfully!`
       );
 
-      // If there are more sections, fetch the next one
-      if (sectionIndex < Object.keys(outlineData).length - 1) {
+      // If there are more sections and we're not in single section mode, fetch the next one
+      if (
+        !singleSection &&
+        sectionIndex < Object.keys(outlineData).length - 1
+      ) {
         await fetchBlogDraftSection(sectionIndex + 1, outlineData);
+      } else if (singleSection) {
+        showFetchEndToast("Section re-draft completed successfully!");
       } else {
         showFetchEndToast("All blog draft sections fetched successfully!");
       }
@@ -360,6 +332,20 @@ export default function CreateBlogPost() {
     }
   };
 
+  const handleRequeryBlogDraft = async () => {
+    await fetchBlogDraftSection(0, blogOutline, false);
+  };
+
+  const handleRequeryBlogDraftSection = async (sectionHeader: string) => {
+    const sectionIndex = blogOutlineData?.findIndex(
+      (section) => section.header === sectionHeader
+    );
+
+    if (sectionIndex !== undefined && sectionIndex !== -1) {
+      await fetchBlogDraftSection(sectionIndex, blogOutline, true);
+    }
+  };
+
   const handleBlogDraftSubmit = (draftData: Record<string, string>) => {
     // const newSections = Object.entries(draftData).map(([header, content]) => ({
     //   header,
@@ -373,11 +359,6 @@ export default function CreateBlogPost() {
 
   const togglePreview = () => {
     setShowPreview(!showPreview);
-  };
-
-  const handleBlogStructureSubmit = (coreMessage: Record<string, string>) => {
-    console.log("Core Message:", coreMessage);
-    // Store the core message and move to the next step
   };
 
   const handleApiError = (error: any) => {
@@ -458,26 +439,21 @@ export default function CreateBlogPost() {
           <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
             <span className="">4</span>
           </div>
-          <CoreMessageCrafter
-            onSubmit={handleCoreMessageSubmit}
-            aiGeneratedContent={coreMessageData}
+
+          <BlogOutline
+            onSubmit={handleBlogOutlineSubmit}
+            onRequery={fetchBlogOutline}
+            blogSections={blogOutlineData || []}
           />
         </div>
         <div className="flex flex-row space-x-4 w-full">
           <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
             <span className="">5</span>
           </div>
-          <BlogOutline
-            onSubmit={handleBlogOutlineSubmit}
-            blogSections={blogOutlineData || []}
-          />
-        </div>
-        <div className="flex flex-row space-x-4 w-full">
-          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-            <span className="">6</span>
-          </div>
           <BlogDraft
             onSubmit={handleBlogDraftSubmit}
+            onRequery={handleRequeryBlogDraft}
+            onRequerySection={handleRequeryBlogDraftSection}
             blogSections={blogOutlineData || []}
             blogOutline={blogOutline}
             blogDraft={blogDraft}

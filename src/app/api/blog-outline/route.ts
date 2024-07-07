@@ -9,13 +9,9 @@ interface ReaderObjectiveData {
   blogGoals: string;
 }
 
-interface CoreMessageData {
-  simple: string;
-  unexpected: string;
-  concrete: string;
-  credible: string;
-  emotional: string;
-  stories: string;
+interface BlogIdea {
+  title: string;
+  description: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -25,9 +21,10 @@ export async function POST(req: NextRequest) {
     const readerObjectiveData: ReaderObjectiveData = JSON.parse(
       formData.get("readerObjectiveData") as string
     );
-    const coreMessageData: CoreMessageData = JSON.parse(
-      formData.get("coreMessageData") as string
+    const selectedBlogIdea: BlogIdea = JSON.parse(
+      formData.get("selectedBlogIdea") as string
     );
+    const contentDescription = formData.get("contentDescription") as string;
 
     // Process files and extract their content
     const fileContents = await Promise.all(
@@ -37,6 +34,11 @@ export async function POST(req: NextRequest) {
         return { name: file.name, content };
       })
     );
+
+    console.log("fileContents", fileContents);
+    console.log("contentDescription", contentDescription);
+    console.log("selectedBlogIdea", selectedBlogIdea);
+    console.log("readerObjectiveData", readerObjectiveData);
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -60,11 +62,15 @@ export async function POST(req: NextRequest) {
 Reference Files:
 ${referenceFilesContent}
 
-Reader Objective Data following the target audience and blog goals.  This is who our audience is, and they should gain from our content and also the authors motivation and goals for reaching out to them:
-${JSON.stringify(readerObjectiveData, null, 2)}
+Content Description:
+${contentDescription}
 
-Core Message Data following SUCCESs principles from the book Made to Stick by Chip Heath and Dan Heath:
-${JSON.stringify(coreMessageData, null, 2)}
+Selected Blog Idea:
+Title: ${selectedBlogIdea.title}
+Description: ${selectedBlogIdea.description}
+
+Reader Objective Data following the target audience and blog goals. This is who our audience is, and they should gain from our content and also the author's motivation and goals for reaching out to them:
+${JSON.stringify(readerObjectiveData, null, 2)}
 
 Please provide your outline in the following JSON format:
 

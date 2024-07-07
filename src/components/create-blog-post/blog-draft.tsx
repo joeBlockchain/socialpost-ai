@@ -17,7 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, RotateCcw } from "lucide-react";
 import { Label } from "../ui/label";
 import { Progress } from "@/components/ui/progress";
 
@@ -28,6 +28,8 @@ interface BlogSection {
 
 interface BlogDraftProps {
   onSubmit: (data: Record<string, string>) => void;
+  onRequery: () => void;
+  onRequerySection: (sectionHeader: string) => void;
   blogSections: BlogSection[];
   blogOutline: Record<string, BlogSection>;
   blogDraft: Record<string, string>;
@@ -35,6 +37,8 @@ interface BlogDraftProps {
 
 export default function BlogDraft({
   onSubmit,
+  onRequery,
+  onRequerySection,
   blogSections,
   blogOutline,
   blogDraft,
@@ -44,6 +48,10 @@ export default function BlogDraft({
     string | undefined
   >(blogSections[0]?.header);
   const [progress, setProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingSections, setLoadingSections] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     // Sync sections with blogOutline and blogDraft
@@ -77,11 +85,59 @@ export default function BlogDraft({
     onSubmit(sections);
   };
 
+  const handleRequery = async () => {
+    setIsLoading(true);
+    try {
+      await onRequery();
+    } catch (error) {
+      console.error("Error re-drafting content:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRequerySection = async (sectionHeader: string) => {
+    setLoadingSections((prev) => ({ ...prev, [sectionHeader]: true }));
+    try {
+      await onRequerySection(sectionHeader);
+    } catch (error) {
+      console.error(`Error re-drafting section ${sectionHeader}:`, error);
+    } finally {
+      setLoadingSections((prev) => ({ ...prev, [sectionHeader]: false }));
+    }
+  };
+
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>The Blog</CardTitle>
-        <CardDescription>Review and edit the blog!</CardDescription>
+      <CardHeader className="flex flex-row justify-between">
+        <div>
+          <CardTitle>The Blog</CardTitle>
+          <CardDescription>Review and edit the blog!</CardDescription>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleRequery}
+          disabled={isLoading}
+          className="ml-4"
+        >
+          {isLoading ? (
+            <span
+              className="loader"
+              style={
+                {
+                  "--loader-size": "18px",
+                  "--loader-color": "#000",
+                  "--loader-color-dark": "#fff",
+                } as React.CSSProperties
+              }
+            ></span>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <RotateCcw className="w-4 h-4" />
+              <span className="">AI Redraft All</span>
+            </div>
+          )}
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-2 mb-4">
@@ -134,18 +190,44 @@ export default function BlogDraft({
                     className="min-h-[150px]"
                   />
                 </div>
-                {index < blogSections.length - 1 && (
+                <div className="flex justify-between items-center">
                   <Button
-                    variant="secondary"
-                    onClick={() =>
-                      setOpenAccordionItem(blogSections[index + 1].header)
-                    }
-                    className="mt-4"
+                    variant="outline"
+                    onClick={() => handleRequerySection(section.header)}
+                    disabled={loadingSections[section.header]}
+                    className="mt-2"
                   >
-                    Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    {loadingSections[section.header] ? (
+                      <span
+                        className="loader"
+                        style={
+                          {
+                            "--loader-size": "18px",
+                            "--loader-color": "#000",
+                            "--loader-color-dark": "#fff",
+                          } as React.CSSProperties
+                        }
+                      ></span>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <RotateCcw className="w-4 h-4" />
+                        <span className="">AI Redraft Section</span>
+                      </div>
+                    )}
                   </Button>
-                )}
+                  {index < blogSections.length - 1 && (
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        setOpenAccordionItem(blogSections[index + 1].header)
+                      }
+                      className="mt-2"
+                    >
+                      Next
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  )}
+                </div>
               </AccordionContent>
             </AccordionItem>
           ))}

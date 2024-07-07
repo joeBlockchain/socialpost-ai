@@ -17,9 +17,6 @@ export async function POST(req: NextRequest) {
     const readerObjectiveData = JSON.parse(
       formData.get("readerObjectiveData") as string
     );
-    const coreMessageData = JSON.parse(
-      formData.get("coreMessageData") as string
-    );
     const blogOutline = JSON.parse(formData.get("blogOutline") as string);
     const completedSections = JSON.parse(
       formData.get("completedSections") as string
@@ -61,9 +58,6 @@ ${fileContents
 
 Reader Objective Data:
 ${JSON.stringify(readerObjectiveData, null, 2)}
-
-Core Message Data:
-${JSON.stringify(coreMessageData, null, 2)}
 
 Blog Outline:
 ${JSON.stringify(blogOutline, null, 2)}
