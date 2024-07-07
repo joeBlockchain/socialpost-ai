@@ -15,10 +15,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Input } from "../ui/input";
+import { Separator } from "../ui/separator";
 
 interface BlogIdea {
   title: string;
-  coreMessage: string;
+  description: string;
 }
 
 interface ContentAnalyzerProps {
@@ -46,12 +47,15 @@ export default function ContentAnalyzer({
 }: ContentAnalyzerProps) {
   const [customIdea, setCustomIdea] = useState<BlogIdea>({
     title: "",
-    coreMessage: "",
+    description: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [editingIdea, setEditingIdea] = useState<number | null>(null);
   const [editedIdeas, setEditedIdeas] = useState<BlogIdea[]>(blogIdeas);
   const [originalIdeas, setOriginalIdeas] = useState<BlogIdea[]>(blogIdeas);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [editedDescription, setEditedDescription] =
+    useState(contentDescription);
 
   useEffect(() => {
     setEditedIdeas(blogIdeas);
@@ -96,16 +100,32 @@ export default function ContentAnalyzer({
   const handleCancelEdit = () => {
     setEditedIdeas([...originalIdeas]);
     setEditingIdea(null);
+    console.log(blogIdeas);
   };
 
   const handleEditChange = (
     index: number,
-    field: "title" | "coreMessage",
+    field: "title" | "description",
     value: string
   ) => {
     const newIdeas = [...editedIdeas];
     newIdeas[index] = { ...newIdeas[index], [field]: value };
     setEditedIdeas(newIdeas);
+  };
+
+  const handleEditDescription = () => {
+    setIsEditingDescription(true);
+    setEditedDescription(contentDescription);
+  };
+
+  const handleSaveDescription = () => {
+    setContentDescription(editedDescription);
+    setIsEditingDescription(false);
+  };
+
+  const handleCancelEditDescription = () => {
+    setEditedDescription(contentDescription);
+    setIsEditingDescription(false);
   };
 
   return (
@@ -119,7 +139,6 @@ export default function ContentAnalyzer({
         </div>
         <Button
           variant="outline"
-          //   size="icon"
           onClick={fetchContentAnalysis}
           disabled={isLoading}
           className="ml-4"
@@ -143,7 +162,53 @@ export default function ContentAnalyzer({
           )}
         </Button>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-8">
+        <div className="space-y-2">
+          <Label>Content Description</Label>
+          <div className="relative">
+            {isEditingDescription ? (
+              <>
+                <Textarea
+                  value={editedDescription}
+                  placeholder="Enter your content description here..."
+                  onChange={(e) => setEditedDescription(e.target.value)}
+                  className=" min-h-[200px]"
+                />
+
+                <div className="flex space-x-2 absolute right-4 -bottom-4 ">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSaveDescription}
+                    className="rounded-lg h-8"
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancelEditDescription}
+                    className="rounded-lg h-8"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Card className="p-4 bg-secondary/30 border-none group">
+                <p className="text-sm">{contentDescription}</p>
+                <Button
+                  variant="outline"
+                  onClick={handleEditDescription}
+                  className="absolute hover:border-primary rounded-lg h-8 right-2 -bottom-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Pencil className="w-4 h-4 mr-2" /> <span>Edit</span>
+                </Button>
+              </Card>
+            )}
+          </div>
+        </div>
+        <Separator className="" />
         <div className="space-y-2">
           <Label>Select a Blog Idea</Label>
           <RadioGroup
@@ -170,7 +235,7 @@ export default function ContentAnalyzer({
                     className={`relative p-3 border border-border rounded-lg items-start space-y-2 w-full ${
                       selectedBlogIdea &&
                       JSON.stringify(selectedBlogIdea) === JSON.stringify(idea)
-                        ? "bg-secondary"
+                        ? "bg-secondary/40 border-border/30"
                         : ""
                     } group`}
                   >
@@ -184,11 +249,11 @@ export default function ContentAnalyzer({
                           className="mb-2"
                         />
                         <Textarea
-                          value={idea.coreMessage}
+                          value={idea.description}
                           onChange={(e) =>
                             handleEditChange(
                               index,
-                              "coreMessage",
+                              "description",
                               e.target.value
                             )
                           }
@@ -222,12 +287,12 @@ export default function ContentAnalyzer({
                           {idea.title}
                         </Label>
                         <p className="text-sm text-muted-foreground">
-                          {idea.coreMessage}
+                          {idea.description}
                         </p>
                         <Button
                           variant="outline"
                           onClick={() => handleEditIdea(index)}
-                          className="absolute hover:border-primary rounded-lg h-8 right-2 -bottom-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute  rounded-lg h-8 right-2 -bottom-4 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <Pencil className="w-4 h-4 mr-2" /> <span>Edit</span>
                         </Button>
@@ -262,9 +327,9 @@ export default function ContentAnalyzer({
               </Label>
               <Textarea
                 id="custom-idea-core-message"
-                value={customIdea.coreMessage}
+                value={customIdea.description}
                 onChange={(e) =>
-                  setCustomIdea({ ...customIdea, coreMessage: e.target.value })
+                  setCustomIdea({ ...customIdea, description: e.target.value })
                 }
                 placeholder="Enter the core message for your custom blog idea..."
               />
@@ -278,7 +343,7 @@ export default function ContentAnalyzer({
           onClick={handleSubmit}
           disabled={
             !selectedBlogIdea &&
-            (!customIdea.title.trim() || !customIdea.coreMessage.trim())
+            (!customIdea.title.trim() || !customIdea.description.trim())
           }
         >
           Next

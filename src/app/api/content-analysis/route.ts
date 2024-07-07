@@ -51,23 +51,23 @@ export async function POST(req: NextRequest) {
                 "blogIdeas": [
                   {
                     "title": "First blog post title",
-                    "coreMessage": "Core message for the first blog post"
+                    "description": "Core message for the first blog post"
                   },
                   {
                     "title": "Second blog post title",
-                    "coreMessage": "Core message for the second blog post"
+                    "description": "Core message for the second blog post"
                   },
                   {
                     "title": "Third blog post title",
-                    "coreMessage": "Core message for the third blog post"
+                    "description": "Core message for the third blog post"
                   },
                   {
                     "title": "Fourth blog post title",
-                    "coreMessage": "Core message for the fourth blog post"
+                    "description": "Core message for the fourth blog post"
                   },
                   {
                     "title": "Fifth blog post title",
-                    "coreMessage": "Core message for the fifth blog post"
+                    "description": "Core message for the fifth blog post"
                   }
                 ]
               }

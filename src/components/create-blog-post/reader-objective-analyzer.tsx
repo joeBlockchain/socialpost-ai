@@ -23,7 +23,7 @@ import {
 
 interface BlogIdea {
   title: string;
-  coreMessage: string;
+  description: string;
 }
 
 interface Option {

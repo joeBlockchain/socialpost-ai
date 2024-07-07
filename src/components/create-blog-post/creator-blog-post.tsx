@@ -22,7 +22,7 @@ import { Button } from "../ui/button";
 
 interface BlogIdea {
   title: string;
-  coreMessage: string;
+  description: string;
 }
 
 interface TargetAudienceData {
@@ -211,6 +211,8 @@ export default function CreateBlogPost() {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
     formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
+    formData.append("contentDescription", contentDescription);
+    formData.append("selectedBlogIdea", JSON.stringify(selectedBlogIdea));
 
     showFetchStartToast("Fetching core message...");
     try {
