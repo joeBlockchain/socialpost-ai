@@ -110,6 +110,7 @@ If there is an issue following the instructions, please provide the reason you c
         {
           sectionContent,
           errorResponse,
+          usage: msg.usage, //return usage for input and output tokens
         },
         { status: 200 }
       );

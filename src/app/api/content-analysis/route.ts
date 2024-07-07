@@ -83,6 +83,8 @@ export async function POST(req: NextRequest) {
       ],
     });
 
+    console.log("msg.usage", msg.usage);
+
     // Extract the JSON data from Claude's response
     const response = msg.content[0].type === "text" ? msg.content[0].text : "";
 
@@ -99,6 +101,7 @@ export async function POST(req: NextRequest) {
       {
         jsonResponse: jsonResponse,
         errorResponse: errorResponse,
+        usage: msg.usage, //return usage for input and output tokens
       },
       { status: 200 }
     );

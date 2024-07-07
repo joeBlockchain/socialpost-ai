@@ -178,6 +178,7 @@ export async function POST(req: NextRequest) {
       {
         jsonResponse: jsonResponse,
         errorResponse: errorResponse,
+        usage: msg.usage, //return usage for input and output tokens
       },
       { status: 200 }
     );

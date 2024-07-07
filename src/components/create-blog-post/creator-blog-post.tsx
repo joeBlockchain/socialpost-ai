@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
+import TokenUsageTracker from "./token-usage-tracker";
 
 interface BlogIdea {
   title: string;
@@ -111,6 +112,12 @@ export default function CreateBlogPost() {
         setContentDescription(parsedResponse.contentDescription);
         setBlogIdeas(parsedResponse.blogIdeas);
         setSelectedBlogIdea(parsedResponse.blogIdeas[0] || null);
+
+        // Update usage
+        if (data.usage) {
+          console.log("data.usage", data.usage);
+          updateTokenUsage(data.usage);
+        }
         showFetchEndToast("Content analysis fetched successfully!");
         return parsedResponse;
       } else if (data.errorResponse) {
@@ -177,6 +184,13 @@ export default function CreateBlogPost() {
 
         // Add the new target audience to the previous ones
         setPreviousTargetAudiences((prev) => [...prev, parsedResponse]);
+
+        // Update usage
+        if (data.usage) {
+          console.log("data.usage", data.usage);
+          updateTokenUsage(data.usage);
+        }
+
         showFetchEndToast("Blog strategy fetched successfully!");
       } else if (data.errorResponse) {
         console.log("Error in fetchBlogStrategy:");
@@ -224,10 +238,23 @@ export default function CreateBlogPost() {
 
       if (data) {
         setBlogOutlineData(data.outlineData.blogSections);
+
+        // Update usage
+        if (data.usage) {
+          console.log("data.usage", data.usage);
+          updateTokenUsage(data.usage);
+        }
+
         showFetchEndToast("Blog outline fetched successfully!");
       }
 
       if (data.errorResponse) {
+        // Update usage
+        if (data.usage) {
+          console.log("data.usage", data.usage);
+          updateTokenUsage(data.usage);
+        }
+
         toast({
           title: "Woops!",
           description: data.errorResponse,
@@ -302,6 +329,12 @@ export default function CreateBlogPost() {
         }
         return newSections;
       });
+
+      // Update usage
+      if (data.usage) {
+        console.log("data.usage", data.usage);
+        updateTokenUsage(data.usage);
+      }
 
       showFetchEndToast(
         `Blog section ${currentSection} of ${totalSections} fetched successfully!`
@@ -400,6 +433,14 @@ export default function CreateBlogPost() {
     }
   };
 
+  const updateTokenUsage = (usage: {
+    input_tokens: number;
+    output_tokens: number;
+  }) => {
+    const event = new CustomEvent("tokenUsageUpdate", { detail: usage });
+    window.dispatchEvent(event);
+  };
+
   return (
     <main className="flex flex-col md:flex-row gap-4 pb-10">
       <div
@@ -478,11 +519,14 @@ export default function CreateBlogPost() {
         )}
       </div>
       <div
-        className={`w-full md:min-w-96 ${
+        className={`relative w-full md:min-w-96 ${
           showPreview ? "block" : "hidden md:block"
         }`}
       >
         <BlogPreview blogSections={blogSections} />
+        <div className="absolute -top-1 right-7">
+          <TokenUsageTracker />
+        </div>
       </div>
       <Button
         onClick={togglePreview}
