@@ -18,6 +18,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface BlogIdea {
   title: string;
@@ -51,6 +52,7 @@ interface BlogSection {
 }
 
 export default function CreateBlogPost() {
+  const [currentStep, setCurrentStep] = useState(1);
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [targetAudienceData, setTargetAudienceData] =
@@ -392,6 +394,12 @@ export default function CreateBlogPost() {
     });
   };
 
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   return (
     <main className="flex flex-col md:flex-row gap-4 pb-10">
       <div
@@ -399,66 +407,75 @@ export default function CreateBlogPost() {
           showPreview ? "hidden md:flex" : "flex"
         }`}
       >
-        <div className="flex flex-row space-x-4 w-full">
-          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-            <span className="">1</span>
-          </div>
-          <ProvideRefContent
-            files={files}
-            setFiles={setFiles}
-            onSubmit={handleSubmitRefContent}
-          />
-        </div>
-        <div className="flex flex-row space-x-4 w-full">
-          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-            <span className="">2</span>
-          </div>
-          <ContentAnalyzer
-            onSubmit={handleContentAnalyzerSubmit}
-            onAnalyze={handleContentAnalysis}
-            contentDescription={contentDescription}
-            setContentDescription={setContentDescription}
-            blogIdeas={blogIdeas}
-            selectedBlogIdea={selectedBlogIdea}
-            setSelectedBlogIdea={setSelectedBlogIdea}
-          />
-        </div>
-        <div className="flex flex-row space-x-4 w-full">
-          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-            <span className="">3</span>
-          </div>
-          <ReaderObjectiveAnalyzer
-            onSubmit={handleReaderObjectiveAnalyzerSubmit}
-            targetAudienceData={targetAudienceData}
-            fetchBlogStrategy={fetchBlogStrategy}
-            selectedBlogIdea={selectedBlogIdea}
-            contentDescription={contentDescription}
-          />
-        </div>
-        <div className="flex flex-row space-x-4 w-full">
-          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-            <span className="">4</span>
-          </div>
-
-          <BlogOutline
-            onSubmit={handleBlogOutlineSubmit}
-            onRequery={fetchBlogOutline}
-            blogSections={blogOutlineData || []}
-          />
-        </div>
-        <div className="flex flex-row space-x-4 w-full">
-          <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
-            <span className="">5</span>
-          </div>
-          <BlogDraft
-            onSubmit={handleBlogDraftSubmit}
-            onRequery={handleRequeryBlogDraft}
-            onRequerySection={handleRequeryBlogDraftSection}
-            blogSections={blogOutlineData || []}
-            blogOutline={blogOutline}
-            blogDraft={blogDraft}
-          />
-        </div>
+        {currentStep === 1 && (
+          <StepWrapper stepNumber={1} onBack={handleBack}>
+            <ProvideRefContent
+              files={files}
+              setFiles={setFiles}
+              onSubmit={() => {
+                handleSubmitRefContent();
+                setCurrentStep(2);
+              }}
+            />
+          </StepWrapper>
+        )}
+        {currentStep === 2 && (
+          <StepWrapper stepNumber={2} onBack={handleBack}>
+            <ContentAnalyzer
+              onSubmit={(contentDescription, selectedBlogIdea) => {
+                handleContentAnalyzerSubmit(
+                  contentDescription,
+                  selectedBlogIdea
+                );
+                setCurrentStep(3);
+              }}
+              onAnalyze={handleContentAnalysis}
+              contentDescription={contentDescription}
+              setContentDescription={setContentDescription}
+              blogIdeas={blogIdeas}
+              selectedBlogIdea={selectedBlogIdea}
+              setSelectedBlogIdea={setSelectedBlogIdea}
+            />
+          </StepWrapper>
+        )}
+        {currentStep === 3 && (
+          <StepWrapper stepNumber={3} onBack={handleBack}>
+            <ReaderObjectiveAnalyzer
+              onSubmit={(data) => {
+                handleReaderObjectiveAnalyzerSubmit(data);
+                setCurrentStep(4);
+              }}
+              targetAudienceData={targetAudienceData}
+              fetchBlogStrategy={fetchBlogStrategy}
+              selectedBlogIdea={selectedBlogIdea}
+              contentDescription={contentDescription}
+            />
+          </StepWrapper>
+        )}
+        {currentStep === 4 && (
+          <StepWrapper stepNumber={4} onBack={handleBack}>
+            <BlogOutline
+              onSubmit={(outlineData) => {
+                handleBlogOutlineSubmit(outlineData);
+                setCurrentStep(5);
+              }}
+              onRequery={fetchBlogOutline}
+              blogSections={blogOutlineData || []}
+            />
+          </StepWrapper>
+        )}
+        {currentStep === 5 && (
+          <StepWrapper stepNumber={5} onBack={handleBack}>
+            <BlogDraft
+              onSubmit={handleBlogDraftSubmit}
+              onRequery={handleRequeryBlogDraft}
+              onRequerySection={handleRequeryBlogDraftSection}
+              blogSections={blogOutlineData || []}
+              blogOutline={blogOutline}
+              blogDraft={blogDraft}
+            />
+          </StepWrapper>
+        )}
       </div>
       <div
         className={`w-full md:min-w-96 ${
@@ -491,3 +508,28 @@ export default function CreateBlogPost() {
     </main>
   );
 }
+
+const StepWrapper: React.FC<{
+  stepNumber: number;
+  onBack: () => void;
+  children: React.ReactNode;
+}> = ({ stepNumber, onBack, children }) => (
+  <div className="relative flex flex-row items-start space-x-4 w-full">
+    <div className="flex flex-row space-x-4 items-center mb-4">
+      <div className="flex h-8 w-8 border border-border rounded-full items-center justify-center">
+        <span>{stepNumber}</span>
+      </div>
+    </div>
+    {children}
+    {stepNumber > 1 && (
+      <Button
+        variant="secondary"
+        onClick={onBack}
+        className="absolute left-14 bottom-6"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back
+      </Button>
+    )}
+  </div>
+);
