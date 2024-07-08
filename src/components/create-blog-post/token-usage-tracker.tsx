@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/popover";
 
 import { Button } from "@/components/ui/button";
+import { CircleHelp, HelpCircle, Info } from "lucide-react";
+import { Label } from "../ui/label";
 
 interface TokenUsage {
   input_tokens: number;
@@ -55,42 +57,55 @@ export default function TokenUsageTracker() {
   const totalCost = inputCost + outputCost;
 
   return (
-    <div className="flex flex-row items-center p-0">
+    <div className="flex flex-row items-center p-1 bg-background border border-border rounded-lg">
       <Button
         variant="ghost"
+        size="sm"
         onClick={() => setShowCost(!showCost)}
-        className=""
+        className="h-6 mr-2"
       >
         {showCost ? "Cost" : "Tokens"}
       </Button>
       {showCost ? (
-        <div className="flex flex-row items-center">
+        <div className="flex flex-row items-center mr-1">
           <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger className="flex flex-row space-x-3 items-center">
               <p className="text-sm">${totalCost.toFixed(4)}</p>
+
+              <HelpCircle
+                strokeWidth={1}
+                className="w-5 h-5 ml-2 text-muted-foreground"
+              />
             </PopoverTrigger>
-            <PopoverContent className="">
+            <PopoverContent className="w-fit">
               <p className="text-sm">Input: ${inputCost.toFixed(4)}</p>
               <p className="text-sm">Output: ${outputCost.toFixed(4)}</p>
             </PopoverContent>
           </Popover>
         </div>
       ) : (
-        <div className="flex flex-row items-center">
+        <div className="flex flex-row items-center mr-1">
           <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger className="flex flex-row space-x-3 items-center">
               <p className="text-sm">
                 {(
                   totalUsage.input_tokens + totalUsage.output_tokens
                 ).toLocaleString()}
               </p>
+              <HelpCircle
+                strokeWidth={1}
+                className="w-5 h-5 ml-2 text-muted-foreground"
+              />
             </PopoverTrigger>
-            <PopoverContent>
+            <PopoverContent className="w-fit">
               <p className="text-sm">
-                Input: {totalUsage.input_tokens.toLocaleString()}
+                <span className="mr-2">Input:</span>
+                {totalUsage.input_tokens.toLocaleString()}
               </p>
+
               <p className="text-sm">
-                Output: {totalUsage.output_tokens.toLocaleString()}
+                <span className="mr-2">Output:</span>
+                {totalUsage.output_tokens.toLocaleString()}
               </p>
             </PopoverContent>
           </Popover>

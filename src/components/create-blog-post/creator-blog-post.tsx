@@ -140,7 +140,9 @@ export default function CreateBlogPost() {
     setContentDescription(contentDescription);
     setSelectedBlogIdea(selectedBlogIdea);
     // You can add logic here to move to the next step or update other states
-    await fetchBlogStrategy(null, selectedBlogIdea, contentDescription);
+    if (targetAudienceData === null || targetAudienceData === undefined) {
+      await fetchBlogStrategy(null, selectedBlogIdea, contentDescription);
+    }
   };
 
   const fetchBlogStrategy = async (
@@ -206,14 +208,19 @@ export default function CreateBlogPost() {
   };
 
   const handleSubmitRefContent = async () => {
-    await handleContentAnalysis();
+    if (!contentDescription || !selectedBlogIdea || blogIdeas.length === 0) {
+      await handleContentAnalysis();
+    }
   };
 
   const handleReaderObjectiveAnalyzerSubmit = async (
     data: ReaderObjectiveData
   ) => {
     setReaderObjectiveData(data);
-    await fetchBlogOutline();
+
+    if (blogOutlineData === null) {
+      await fetchBlogOutline();
+    }
   };
 
   const fetchBlogOutline = async () => {
@@ -272,7 +279,9 @@ export default function CreateBlogPost() {
     setBlogOutline(outlineData);
 
     // Start drafting the first section
-    await fetchBlogDraftSection(0, outlineData);
+    if (!blogDraft[Object.keys(outlineData)[0]]) {
+      await fetchBlogDraftSection(0, outlineData);
+    }
   };
 
   const fetchBlogDraftSection = async (
@@ -524,7 +533,7 @@ export default function CreateBlogPost() {
         }`}
       >
         <BlogPreview blogSections={blogSections} />
-        <div className="absolute -top-1 right-7">
+        <div className="absolute -top-3 right-4">
           <TokenUsageTracker />
         </div>
       </div>
