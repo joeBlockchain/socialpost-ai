@@ -104,12 +104,23 @@ interface TargetAudienceData {
   }>;
 }
 
+interface ReaderObjectiveData {
+  targetAudience: {
+    value: string;
+    rationale: string;
+  };
+  audienceGoals: {
+    value: string;
+    rationale: string;
+  };
+  blogGoals: {
+    value: string;
+    rationale: string;
+  };
+}
+
 interface ReaderObjectiveAnalyzerProps {
-  onSubmit: (data: {
-    targetAudience: string;
-    audienceGoals: string;
-    blogGoals: string;
-  }) => void;
+  onSubmit: (data: ReaderObjectiveData) => void;
   targetAudienceData: TargetAudienceData | null;
   fetchBlogStrategy: (
     currentData: TargetAudienceData | null,
@@ -118,6 +129,7 @@ interface ReaderObjectiveAnalyzerProps {
   ) => Promise<void>;
   selectedBlogIdea: BlogIdea | null;
   contentDescription: string;
+  readerObjectiveData: ReaderObjectiveData | null;
 }
 
 export default function ReaderObjectiveAnalyzer({
@@ -126,6 +138,7 @@ export default function ReaderObjectiveAnalyzer({
   fetchBlogStrategy,
   selectedBlogIdea,
   contentDescription,
+  readerObjectiveData,
 }: ReaderObjectiveAnalyzerProps) {
   const [selectedTargetAudience, setSelectedTargetAudience] =
     useState("custom");
@@ -134,13 +147,21 @@ export default function ReaderObjectiveAnalyzer({
   const [customAudienceGoals, setCustomAudienceGoals] = useState("");
   const [selectedBlogGoals, setSelectedBlogGoals] = useState("custom");
   const [customBlogGoals, setCustomBlogGoals] = useState("");
+
   const [openAccordionItem, setOpenAccordionItem] = useState<
     string | undefined
   >("target-audience");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (targetAudienceData) {
+    if (readerObjectiveData) {
+      setSelectedTargetAudience(readerObjectiveData.targetAudience.value);
+      setCustomTargetAudience(readerObjectiveData.targetAudience.value);
+      setSelectedAudienceGoals(readerObjectiveData.audienceGoals.value);
+      setCustomAudienceGoals(readerObjectiveData.audienceGoals.value);
+      setSelectedBlogGoals(readerObjectiveData.blogGoals.value);
+      setCustomBlogGoals(readerObjectiveData.blogGoals.value);
+    } else if (targetAudienceData) {
       setSelectedTargetAudience(targetAudienceData.targetAudience.name);
       setSelectedAudienceGoals(
         targetAudienceData.audienceInterest[0]?.reason || "custom"
@@ -149,20 +170,39 @@ export default function ReaderObjectiveAnalyzer({
         targetAudienceData.authorMotivation[0]?.reason || "custom"
       );
     }
-  }, [targetAudienceData]);
+  }, [readerObjectiveData, targetAudienceData]);
 
   const handleSubmit = () => {
-    const data = {
-      targetAudience:
-        selectedTargetAudience === "custom"
-          ? customTargetAudience
-          : selectedTargetAudience,
-      audienceGoals:
-        selectedAudienceGoals === "custom"
-          ? customAudienceGoals
-          : selectedAudienceGoals,
-      blogGoals:
-        selectedBlogGoals === "custom" ? customBlogGoals : selectedBlogGoals,
+    const getValueAndRationale = (
+      selected: string,
+      custom: string,
+      options: Option[]
+    ) => {
+      if (selected === "custom") {
+        return { value: custom, rationale: "Custom input" };
+      }
+      const option = options.find((opt) => opt.value === selected);
+      return option
+        ? { value: option.value, rationale: option.rationale }
+        : { value: "", rationale: "" };
+    };
+
+    const data: ReaderObjectiveData = {
+      targetAudience: getValueAndRationale(
+        selectedTargetAudience,
+        customTargetAudience,
+        targetAudienceOptions
+      ),
+      audienceGoals: getValueAndRationale(
+        selectedAudienceGoals,
+        customAudienceGoals,
+        audienceGoalsOptions
+      ),
+      blogGoals: getValueAndRationale(
+        selectedBlogGoals,
+        customBlogGoals,
+        blogGoalsOptions
+      ),
     };
     onSubmit(data);
   };

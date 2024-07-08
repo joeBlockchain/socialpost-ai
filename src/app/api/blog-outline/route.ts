@@ -4,9 +4,18 @@ import Anthropic from "@anthropic-ai/sdk";
 export const maxDuration = 60;
 
 interface ReaderObjectiveData {
-  targetAudience: string;
-  audienceGoals: string;
-  blogGoals: string;
+  targetAudience: {
+    value: string;
+    rationale: string;
+  };
+  audienceGoals: {
+    value: string;
+    rationale: string;
+  };
+  blogGoals: {
+    value: string;
+    rationale: string;
+  };
 }
 
 interface BlogIdea {
@@ -35,12 +44,18 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
     // Prepare the reference files content for Claude
     const referenceFilesContent = fileContents
       .map((file) => `File: ${file.name}\n\n${file.content}\n\n`)
       .join("");
+
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    console.log("referenceFilesContent", referenceFilesContent);
+    console.log("contentDescription", contentDescription);
+    console.log("selectedBlogIdea.title", selectedBlogIdea.title);
+    console.log("selectedBlogIdea.description", selectedBlogIdea.description);
+    console.log(JSON.stringify(readerObjectiveData, null, 2));
 
     const msg = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",
@@ -65,7 +80,12 @@ Title: ${selectedBlogIdea.title}
 Description: ${selectedBlogIdea.description}
 
 Reader Objective Data following the target audience and blog goals. This is who our audience is, and they should gain from our content and also the author's motivation and goals for reaching out to them:
-${JSON.stringify(readerObjectiveData, null, 2)}
+Target Audience: ${readerObjectiveData.targetAudience.value}
+Target Audience Rationale: ${readerObjectiveData.targetAudience.rationale}
+Audience Goals: ${readerObjectiveData.audienceGoals.value}
+Audience Goals Rationale: ${readerObjectiveData.audienceGoals.rationale}
+Blog Goals: ${readerObjectiveData.blogGoals.value}
+Blog Goals Rationale: ${readerObjectiveData.blogGoals.rationale}
 
 Please provide your outline in the following JSON format:
 

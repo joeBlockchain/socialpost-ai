@@ -3,6 +3,26 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export const maxDuration = 60;
 
+interface ReaderObjectiveData {
+  targetAudience: {
+    value: string;
+    rationale: string;
+  };
+  audienceGoals: {
+    value: string;
+    rationale: string;
+  };
+  blogGoals: {
+    value: string;
+    rationale: string;
+  };
+}
+
+interface BlogIdea {
+  title: string;
+  description: string;
+}
+
 interface BlogSection {
   title: string;
   description: string;
@@ -14,6 +34,10 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
+    const contentDescription = formData.get("contentDescription") as string;
+    const selectedBlogIdea: BlogIdea = JSON.parse(
+      formData.get("selectedBlogIdea") as string
+    );
     const readerObjectiveData = JSON.parse(
       formData.get("readerObjectiveData") as string
     );
@@ -34,10 +58,26 @@ export async function POST(req: NextRequest) {
       })
     );
 
+    // Prepare the reference files content for Claude
+    const referenceFilesContent = fileContents
+      .map((file) => `File: ${file.name}\n\n${file.content}\n\n`)
+      .join("");
+
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const currentSection = Object.keys(blogOutline)[currentSectionIndex];
     const currentSectionContent = blogOutline[currentSection];
+
+    console.log("referenceFilesContent", referenceFilesContent);
+    console.log("contentDescription", contentDescription);
+    console.log("selectedBlogIdea.title", selectedBlogIdea.title);
+    console.log("selectedBlogIdea.description", selectedBlogIdea.description);
+    console.log(`Target Audience: ${readerObjectiveData.targetAudience.value}
+Target Audience Rationale: ${readerObjectiveData.targetAudience.rationale}
+Audience Goals: ${readerObjectiveData.audienceGoals.value}
+Audience Goals Rationale: ${readerObjectiveData.audienceGoals.rationale}
+Blog Goals: ${readerObjectiveData.blogGoals.value}
+Blog Goals Rationale: ${readerObjectiveData.blogGoals.rationale}`);
 
     const msg = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",
@@ -51,13 +91,26 @@ export async function POST(req: NextRequest) {
               type: "text",
               text: `You are an AI assistant tasked with writing a section of a blog post. Here's the current context:
 
-Reference Files:
-${fileContents
-  .map((file) => `File: ${file.name}\n${file.content}\n`)
-  .join("\n")}
+              Reference Files:
+              ${referenceFilesContent}
+              
+              Content Description:
+              ${contentDescription}
+              
+              Selected Blog Idea:
+              Title: ${selectedBlogIdea.title}
+              Description: ${selectedBlogIdea.description}
 
-Reader Objective Data:
-${JSON.stringify(readerObjectiveData, null, 2)}
+              Target Audience: ${readerObjectiveData.targetAudience.value}
+              Target Audience Rationale: ${
+                readerObjectiveData.targetAudience.rationale
+              }
+              Audience Goals: ${readerObjectiveData.audienceGoals.value}
+              Audience Goals Rationale: ${
+                readerObjectiveData.audienceGoals.rationale
+              }
+              Blog Goals: ${readerObjectiveData.blogGoals.value}
+              Blog Goals Rationale: ${readerObjectiveData.blogGoals.rationale}
 
 Blog Outline:
 ${JSON.stringify(blogOutline, null, 2)}

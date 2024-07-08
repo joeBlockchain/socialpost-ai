@@ -42,9 +42,18 @@ interface TargetAudienceData {
 }
 
 interface ReaderObjectiveData {
-  targetAudience: string;
-  audienceGoals: string;
-  blogGoals: string;
+  targetAudience: {
+    value: string;
+    rationale: string;
+  };
+  audienceGoals: {
+    value: string;
+    rationale: string;
+  };
+  blogGoals: {
+    value: string;
+    rationale: string;
+  };
 }
 
 interface BlogSection {
@@ -220,7 +229,6 @@ export default function CreateBlogPost() {
   ) => {
     setReaderObjectiveData(data);
 
-    // Use the data directly instead of relying on the state
     if (blogOutlineData === null) {
       await fetchBlogOutline(data);
     }
@@ -294,6 +302,8 @@ export default function CreateBlogPost() {
   ) => {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
+    formData.append("contentDescription", contentDescription);
+    formData.append("selectedBlogIdea", JSON.stringify(selectedBlogIdea));
     formData.append("readerObjectiveData", JSON.stringify(readerObjectiveData));
 
     formData.append("blogOutline", JSON.stringify(outlineData));
@@ -508,6 +518,7 @@ export default function CreateBlogPost() {
               fetchBlogStrategy={fetchBlogStrategy}
               selectedBlogIdea={selectedBlogIdea}
               contentDescription={contentDescription}
+              readerObjectiveData={readerObjectiveData}
             />
           </StepWrapper>
         )}
