@@ -24,6 +24,8 @@ interface TargetAudienceData {
 }
 
 export async function POST(req: NextRequest) {
+  console.log("calling POST /api/reader-objective");
+
   try {
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];

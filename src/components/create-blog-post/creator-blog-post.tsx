@@ -135,10 +135,12 @@ export default function CreateBlogPost() {
 
   const handleContentAnalyzerSubmit = async (
     contentDescription: string,
-    selectedBlogIdea: BlogIdea
+    selectedBlogIdea: BlogIdea,
+    updatedBlogIdeas: BlogIdea[]
   ) => {
     setContentDescription(contentDescription);
     setSelectedBlogIdea(selectedBlogIdea);
+    setBlogIdeas(updatedBlogIdeas);
     // You can add logic here to move to the next step or update other states
     if (targetAudienceData === null || targetAudienceData === undefined) {
       await fetchBlogStrategy(null, selectedBlogIdea, contentDescription);
@@ -473,10 +475,15 @@ export default function CreateBlogPost() {
         {currentStep === 2 && (
           <StepWrapper stepNumber={2} onBack={handleBack}>
             <ContentAnalyzer
-              onSubmit={(contentDescription, selectedBlogIdea) => {
+              onSubmit={(
+                contentDescription,
+                selectedBlogIdea,
+                updatedBlogIdeas
+              ) => {
                 handleContentAnalyzerSubmit(
                   contentDescription,
-                  selectedBlogIdea
+                  selectedBlogIdea,
+                  updatedBlogIdeas
                 );
                 setCurrentStep(3);
               }}
@@ -486,6 +493,7 @@ export default function CreateBlogPost() {
               blogIdeas={blogIdeas}
               selectedBlogIdea={selectedBlogIdea}
               setSelectedBlogIdea={setSelectedBlogIdea}
+              setBlogIdeas={setBlogIdeas}
             />
           </StepWrapper>
         )}

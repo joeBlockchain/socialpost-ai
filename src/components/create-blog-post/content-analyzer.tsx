@@ -23,17 +23,21 @@ interface BlogIdea {
 }
 
 interface ContentAnalyzerProps {
-  onSubmit: (contentDescription: string, selectedBlogIdea: BlogIdea) => void;
+  onSubmit: (
+    contentDescription: string,
+    selectedBlogIdea: BlogIdea,
+    updatedBlogIdeas: BlogIdea[]
+  ) => void;
   onAnalyze: (
     selectedBlogIdea: BlogIdea,
     contentDescription: string
   ) => Promise<{ contentDescription: string; blogIdeas: BlogIdea[] }>;
-
   contentDescription: string;
   setContentDescription: (value: string) => void;
   blogIdeas: BlogIdea[];
   selectedBlogIdea: BlogIdea | null;
   setSelectedBlogIdea: (value: BlogIdea | null) => void;
+  setBlogIdeas: (value: BlogIdea[]) => void;
 }
 
 export default function ContentAnalyzer({
@@ -44,6 +48,7 @@ export default function ContentAnalyzer({
   blogIdeas,
   selectedBlogIdea,
   setSelectedBlogIdea,
+  setBlogIdeas,
 }: ContentAnalyzerProps) {
   const [customIdea, setCustomIdea] = useState<BlogIdea>({
     title: "",
@@ -51,16 +56,10 @@ export default function ContentAnalyzer({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [editingIdea, setEditingIdea] = useState<number | null>(null);
-  const [editedIdeas, setEditedIdeas] = useState<BlogIdea[]>(blogIdeas);
-  const [originalIdeas, setOriginalIdeas] = useState<BlogIdea[]>(blogIdeas);
+
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] =
     useState(contentDescription);
-
-  useEffect(() => {
-    setEditedIdeas(blogIdeas);
-    setOriginalIdeas(blogIdeas);
-  }, [blogIdeas]);
 
   const fetchContentAnalysis = async () => {
     setIsLoading(true);
@@ -68,8 +67,6 @@ export default function ContentAnalyzer({
       const finalIdea = selectedBlogIdea || customIdea;
       const result = await onAnalyze(finalIdea, contentDescription);
       setContentDescription(result.contentDescription);
-      setEditedIdeas(result.blogIdeas);
-      setOriginalIdeas(result.blogIdeas);
     } catch (error) {
       console.error("Error fetching content analysis:", error);
     } finally {
@@ -77,30 +74,22 @@ export default function ContentAnalyzer({
     }
   };
 
-  const handleSubmit = () => {
-    const finalIdea = selectedBlogIdea || customIdea;
-    onSubmit(contentDescription, finalIdea);
-  };
-
   const handleEditIdea = (index: number) => {
     setEditingIdea(index);
-    setOriginalIdeas([...editedIdeas]);
   };
 
   const handleSaveEdit = (index: number) => {
     setEditingIdea(null);
     if (
       selectedBlogIdea &&
-      JSON.stringify(selectedBlogIdea) === JSON.stringify(editedIdeas[index])
+      JSON.stringify(selectedBlogIdea) === JSON.stringify(blogIdeas[index])
     ) {
-      setSelectedBlogIdea(editedIdeas[index]);
+      setSelectedBlogIdea(blogIdeas[index]);
     }
   };
 
   const handleCancelEdit = () => {
-    setEditedIdeas([...originalIdeas]);
     setEditingIdea(null);
-    console.log(blogIdeas);
   };
 
   const handleEditChange = (
@@ -108,9 +97,9 @@ export default function ContentAnalyzer({
     field: "title" | "description",
     value: string
   ) => {
-    const newIdeas = [...editedIdeas];
+    const newIdeas = [...blogIdeas];
     newIdeas[index] = { ...newIdeas[index], [field]: value };
-    setEditedIdeas(newIdeas);
+    setBlogIdeas(newIdeas);
   };
 
   const handleEditDescription = () => {
@@ -126,6 +115,11 @@ export default function ContentAnalyzer({
   const handleCancelEditDescription = () => {
     setEditedDescription(contentDescription);
     setIsEditingDescription(false);
+  };
+
+  const handleSubmit = () => {
+    const finalIdea = selectedBlogIdea || customIdea;
+    onSubmit(contentDescription, finalIdea, blogIdeas);
   };
 
   return (
@@ -223,7 +217,7 @@ export default function ContentAnalyzer({
               }
             }}
           >
-            {editedIdeas.map((idea, index) => (
+            {blogIdeas.map((idea, index) => (
               <div key={index} className="flex flex-col space-y-2 mb-4">
                 <div className="flex items-start space-x-4">
                   <RadioGroupItem

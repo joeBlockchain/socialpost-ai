@@ -83,8 +83,6 @@ export async function POST(req: NextRequest) {
       ],
     });
 
-    console.log("msg.usage", msg.usage);
-
     // Extract the JSON data from Claude's response
     const response = msg.content[0].type === "text" ? msg.content[0].text : "";
 
