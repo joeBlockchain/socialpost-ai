@@ -152,7 +152,7 @@ export default function ReaderObjectiveAnalyzer({
   }, [targetAudienceData]);
 
   const handleSubmit = () => {
-    onSubmit({
+    const data = {
       targetAudience:
         selectedTargetAudience === "custom"
           ? customTargetAudience
@@ -163,7 +163,8 @@ export default function ReaderObjectiveAnalyzer({
           : selectedAudienceGoals,
       blogGoals:
         selectedBlogGoals === "custom" ? customBlogGoals : selectedBlogGoals,
-    });
+    };
+    onSubmit(data);
   };
 
   const handleNextAccordionItem = () => {

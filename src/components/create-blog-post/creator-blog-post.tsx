@@ -218,12 +218,13 @@ export default function CreateBlogPost() {
   ) => {
     setReaderObjectiveData(data);
 
+    // Use the data directly instead of relying on the state
     if (blogOutlineData === null) {
-      await fetchBlogOutline();
+      await fetchBlogOutline(data);
     }
   };
 
-  const fetchBlogOutline = async () => {
+  const fetchBlogOutline = async (readerObjectiveData: ReaderObjectiveData) => {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
     formData.append("contentDescription", contentDescription);
@@ -509,7 +510,7 @@ export default function CreateBlogPost() {
                 handleBlogOutlineSubmit(outlineData);
                 setCurrentStep(5);
               }}
-              onRequery={fetchBlogOutline}
+              onRequery={() => fetchBlogOutline(readerObjectiveData!)}
               blogSections={blogOutlineData || []}
             />
           </StepWrapper>

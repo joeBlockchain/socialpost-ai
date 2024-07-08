@@ -163,8 +163,6 @@ export async function POST(req: NextRequest) {
     // Extract the JSON data from Claude's response
     const response = msg.content[0].type === "text" ? msg.content[0].text : "";
 
-    console.log("response", response);
-
     // Extract the jsonResponse and error
     const jsonResponse = response
       .match(/<jsonResponse>([\s\S]*?)<\/jsonResponse>/)?.[1]
