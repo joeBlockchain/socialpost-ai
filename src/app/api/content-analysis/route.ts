@@ -18,6 +18,8 @@ export async function POST(req: NextRequest) {
       })
     );
 
+    console.log("fileContents", fileContents);
+
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     // Prepare the reference files content for Claude

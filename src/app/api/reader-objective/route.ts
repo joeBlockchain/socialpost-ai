@@ -53,6 +53,11 @@ export async function POST(req: NextRequest) {
       .map((file) => `File: ${file.name}\n\n${file.content}\n\n`)
       .join("");
 
+    console.log("referenceFilesContent", referenceFilesContent);
+    console.log("contentDescription", contentDescription);
+    console.log("selectedBlogIdea.title", selectedBlogIdea.title);
+    console.log("selectedBlogIdea.description", selectedBlogIdea.description);
+
     let previousAudiencesInstruction = "";
     if (previousTargetAudiences.length > 0) {
       previousAudiencesInstruction = `

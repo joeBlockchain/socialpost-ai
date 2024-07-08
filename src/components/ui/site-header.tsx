@@ -39,7 +39,7 @@ export function SiteHeader() {
             </Button>
             <Button asChild variant="ghost" size="icon" className="h-9 w-9">
               <Link
-                href="#"
+                href="/https://twitter.com/JoeTaylor_86753/status/1810433776167866526"
                 prefetch={false}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -60,7 +60,7 @@ export function SiteHeader() {
             </Button>
             <Button asChild variant="ghost" size="icon" className="h-9 w-9">
               <Link
-                href="#"
+                href="https://medium.com/@learningsomethingnew/the-ai-human-alliance-revolutionizing-content-creation-bf8b5cd9897b"
                 prefetch={false}
                 target="_blank"
                 rel="noopener noreferrer"
