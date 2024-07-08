@@ -65,7 +65,11 @@ export default function BlogPreview({ blogSections }: BlogPreviewProps) {
   const isEmpty = !displaySections || displaySections.length === 0;
 
   useEffect(() => {
-    setDisplaySections(blogSections);
+    if (blogSections.length === 0) {
+      setDisplaySections([]);
+    } else {
+      setDisplaySections(blogSections);
+    }
   }, [blogSections]);
 
   const copyToClipboard = () => {

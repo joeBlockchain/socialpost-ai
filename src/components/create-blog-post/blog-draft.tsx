@@ -33,6 +33,7 @@ interface BlogDraftProps {
   blogSections: BlogSection[];
   blogOutline: Record<string, BlogSection>;
   blogDraft: Record<string, string>;
+  clearBlogContent: () => void;
 }
 
 export default function BlogDraft({
@@ -42,6 +43,7 @@ export default function BlogDraft({
   blogSections,
   blogOutline,
   blogDraft,
+  clearBlogContent,
 }: BlogDraftProps) {
   const [sections, setSections] = useState<Record<string, string>>({});
   const [openAccordionItem, setOpenAccordionItem] = useState<
@@ -86,6 +88,7 @@ export default function BlogDraft({
   };
 
   const handleRequery = async () => {
+    clearBlogContent();
     setIsLoading(true);
     try {
       await onRequery();

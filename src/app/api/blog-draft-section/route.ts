@@ -78,6 +78,7 @@ Audience Goals: ${readerObjectiveData.audienceGoals.value}
 Audience Goals Rationale: ${readerObjectiveData.audienceGoals.rationale}
 Blog Goals: ${readerObjectiveData.blogGoals.value}
 Blog Goals Rationale: ${readerObjectiveData.blogGoals.rationale}`);
+    console.log("blogOutline", JSON.stringify(blogOutline));
 
     const msg = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",

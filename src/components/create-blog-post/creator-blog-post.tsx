@@ -289,6 +289,11 @@ export default function CreateBlogPost() {
   ) => {
     setBlogOutline(outlineData);
 
+    // Update blogOutlineData state (array of sections)
+    const newBlogOutlineData = Object.values(outlineData);
+    setBlogOutlineData(newBlogOutlineData);
+    console.log("newBlogOutlineData", newBlogOutlineData);
+
     // Start drafting the first section
     if (!blogDraft[Object.keys(outlineData)[0]]) {
       await fetchBlogDraftSection(0, outlineData);
@@ -389,7 +394,13 @@ export default function CreateBlogPost() {
     }
   };
 
+  const clearBlogContent = () => {
+    setBlogDraft({});
+    setBlogSections([]);
+  };
+
   const handleRequeryBlogDraft = async () => {
+    clearBlogContent();
     await fetchBlogDraftSection(0, blogOutline, false);
   };
 
@@ -543,6 +554,7 @@ export default function CreateBlogPost() {
               blogSections={blogOutlineData || []}
               blogOutline={blogOutline}
               blogDraft={blogDraft}
+              clearBlogContent={clearBlogContent}
             />
           </StepWrapper>
         )}
